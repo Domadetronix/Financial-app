@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
 import { Container, Box } from '@mui/material';
-import { Header } from './components/Header';
+import React, { useState, useEffect } from 'react';
+
+import { EditDialog } from './components/EditDialog';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseList } from './components/ExpenseList';
-import { EditDialog } from './components/EditDialog';
+import { Header } from './components/Header';
 import { IncomeDialog } from './components/IncomeDialog';
 import { Expense, EditData } from './types';
 import { loadExpenses, saveExpenses, loadIncome, saveIncome } from './utils/storage';
@@ -44,7 +45,7 @@ const App: React.FC = () => {
   const remaining = income - expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <Container sx={{ py: 4 }}>
+    <Container sx={{ py: 4, backgroundColor: 'white' }}>
       <Header
         income={income}
         remaining={remaining}
