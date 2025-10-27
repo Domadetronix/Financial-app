@@ -45,7 +45,7 @@ const App: React.FC = () => {
   const remaining = income - expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <Container sx={{ py: 4, backgroundColor: 'white' }}>
+    <Container sx={{ py: 4, h: '100vh', backgroundColor: 'white' }}>
       <Header
         income={income}
         remaining={remaining}
