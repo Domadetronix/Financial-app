@@ -1,21 +1,13 @@
 export interface Expense {
     id: string;
-    title: string;
-    category: string;
+    name: string;
     amount: number;
-    date: string; // ISO string
-    type: "recurring" | "once";
-    fromRecurringId?: string;
+    type: "monthly" | "one-time";
 }
 
-export interface RecurringExpense {
+export interface EditData {
     id: string;
-    title: string;
-    category: string;
+    name: string;
     amount: number;
-    day: number; // день месяца
-}
-
-export interface Meta {
-    lastApplied: string | null; // YYYY-MM
+    type: "monthly" | "one-time";
 }
