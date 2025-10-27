@@ -1,6 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, ListItem, ListItemText, IconButton, Chip } from '@mui/material';
+import { Box, ListItem, ListItemText, IconButton } from '@mui/material';
 import React from 'react';
 
 import { Expense } from '../types';
@@ -32,10 +32,11 @@ export const ExpenseItem: React.FC<Props> = ({ expense, onDelete, onEdit }) => {
       }
     >
       <Box display={'flex'} width={'100%'} alignItems={'center'}>
-        <ListItemText primary={expense.name} secondary={`${expense.amount} ₽`} />
-        <Chip
-          label={expense.type === 'monthly' ? 'Ежемесячная' : 'Разовая'}
-          color={expense.type === 'monthly' ? 'error' : 'secondary'}
+        <ListItemText
+          primary={expense.name}
+          secondary={`${expense.amount} ₽ | ${
+            expense.type === 'monthly' ? 'Ежемесячная' : 'Разовая'
+          }`}
         />
       </Box>
     </ListItem>

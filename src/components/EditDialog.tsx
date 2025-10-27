@@ -1,38 +1,18 @@
-import {
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  Button,
-  ToggleButtonGroup,
-  ToggleButton
-} from '@mui/material';
-import React, { useState, useEffect } from 'react';
-
-import { StyledDialog } from '@/styled-components/StyledDialog';
+import { Dialog, DialogTitle, DialogContent, TextField, Button, Box } from '@mui/material';
+import React, { useState } from 'react';
 
 import { Expense } from '../types';
 
 interface Props {
-  expense: Expense | null;
+  expense: Expense;
   onClose: () => void;
   onSave: (expense: Expense) => void;
 }
 
 export const EditDialog: React.FC<Props> = ({ expense, onClose, onSave }) => {
-  const [name, setName] = useState('');
-  const [amount, setAmount] = useState(0);
-  const [type, setType] = useState<'monthly' | 'one-time'>('one-time');
-
-  useEffect(() => {
-    if (expense) {
-      setName(expense.name);
-      setAmount(expense.amount);
-      setType(expense.type);
-    }
-  }, [expense]);
-
-  if (!expense) return null;
+  const [name, setName] = useState(expense.name);
+  const [amount, setAmount] = useState<number>(expense.amount);
+  const [type, setType] = useState<'monthly' | 'one-time'>(expense.type);
 
   const handleSave = () => {
     onSave({ ...expense, name, amount, type });
@@ -40,44 +20,39 @@ export const EditDialog: React.FC<Props> = ({ expense, onClose, onSave }) => {
   };
 
   return (
-    <StyledDialog open={!!expense} onClose={onClose}>
-      <DialogTitle>Редактирование траты</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', pt: 1 }}>
-        <TextField
-          label="Название"
-          sx={{ marginTop: '15px' }}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <TextField
-          label="Сумма"
-          sx={{ marginTop: '15px' }}
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-        />
-        <ToggleButtonGroup
-          value={type}
-          exclusive
-          onChange={(_, val) => val && setType(val)}
-          sx={{ justifyContent: 'center', marginTop: '15px' }}
-        >
-          <ToggleButton sx={{ width: '50%' }} value="monthly">
-            Ежемесячная
-          </ToggleButton>
-          <ToggleButton sx={{ width: '50%' }} value="one-time">
-            Разовая
-          </ToggleButton>
-        </ToggleButtonGroup>
+    <Dialog open onClose={onClose}>
+      <DialogTitle>Редактировать трату</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField label="Название" value={name} onChange={(e) => setName(e.target.value)} />
+          <TextField
+            label="Сумма"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant={type === 'monthly' ? 'contained' : 'outlined'}
+              sx={{ width: '50%' }}
+              color="error"
+              onClick={() => setType('monthly')}
+            >
+              Ежемесячная
+            </Button>
+            <Button
+              variant={type === 'one-time' ? 'contained' : 'outlined'}
+              color="secondary"
+              onClick={() => setType('one-time')}
+            >
+              Разовая
+            </Button>
+          </Box>
+          <Button variant="contained" sx={{ width: '50%' }} onClick={handleSave}>
+            Сохранить
+          </Button>
+        </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3 }}>
-        <Button sx={{ width: '50%' }} onClick={onClose} variant="contained" color="warning">
-          Отмена
-        </Button>
-        <Button sx={{ width: '50%' }} onClick={handleSave} variant="contained" color="success">
-          Сохранить
-        </Button>
-      </DialogActions>
-    </StyledDialog>
+    </Dialog>
   );
 };

@@ -36,8 +36,10 @@ export const IncomeDialog: React.FC<Props> = ({ open, onClose, onSave, currentIn
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Отмена</Button>
-        <Button onClick={handleSave} variant="contained">
+        <Button sx={{ width: '50%' }} onClick={onClose}>
+          Отмена
+        </Button>
+        <Button sx={{ width: '50%' }} onClick={handleSave} variant="contained">
           Сохранить
         </Button>
       </DialogActions>
