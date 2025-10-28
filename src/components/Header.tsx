@@ -29,7 +29,7 @@ export const Header: React.FC<Props> = ({
       }}
     >
       <Typography variant="h6" color="primary" sx={{ cursor: 'pointer' }}>
-        {(user?.first_name, user?.id)}
+        {user ? user.username : 'Нет данных о пользователе'}
       </Typography>
       <Box
         sx={{
