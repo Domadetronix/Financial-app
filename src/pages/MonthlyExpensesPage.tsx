@@ -43,7 +43,7 @@ export const MonthlyExpensesPage: React.FC = () => {
     <Container>
       <Stack sx={{ alignItems: 'center' }} spacing={2}>
         <Typography variant="h6">Ежемесячные траты</Typography>
-        <Box display="flex" gap={2}>
+        <Box display="flex" gap={2} width={'100%'}>
           <TextField
             label="Название траты"
             value={name}
@@ -70,6 +70,7 @@ export const MonthlyExpensesPage: React.FC = () => {
           expense={editingExpense}
           onClose={() => setEditingExpense(null)}
           onSave={handleSaveEdit}
+          hideOption={true}
         />
       )}
     </Container>

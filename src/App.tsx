@@ -8,9 +8,8 @@ import { MonthlyExpensesPage } from './pages/MonthlyExpensesPage';
 
 const App: React.FC = () => {
   const [tab, setTab] = useState('home');
-
   return (
-    <Box sx={{ mt: '64px' }}>
+    <Box sx={{ mt: '84px', height: '100vh', backgroundColor: 'white' }}>
       {tab === 'home' && <HomePage />}
       {tab === 'monthly' && <MonthlyExpensesPage />}
       {/* {tab === 'stats' && <StatisticsPage />} */}

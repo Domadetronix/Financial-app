@@ -1,5 +1,7 @@
-import { Dialog, DialogTitle, DialogContent, TextField, Button, Box } from '@mui/material';
+import { DialogTitle, DialogContent, TextField, Button, Box } from '@mui/material';
 import React, { useState } from 'react';
+
+import { StyledDialog } from '@/styled-components/StyledDialog';
 
 import { Expense } from '../types';
 
@@ -7,9 +9,10 @@ interface Props {
   expense: Expense;
   onClose: () => void;
   onSave: (expense: Expense) => void;
+  hideOption?: boolean;
 }
 
-export const EditDialog: React.FC<Props> = ({ expense, onClose, onSave }) => {
+export const EditDialog: React.FC<Props> = ({ expense, onClose, onSave, hideOption }) => {
   const [name, setName] = useState(expense.name);
   const [amount, setAmount] = useState<number>(expense.amount);
   const [type, setType] = useState<'monthly' | 'one-time'>(expense.type);
@@ -20,7 +23,7 @@ export const EditDialog: React.FC<Props> = ({ expense, onClose, onSave }) => {
   };
 
   return (
-    <Dialog open onClose={onClose}>
+    <StyledDialog open onClose={onClose}>
       <DialogTitle>Редактировать трату</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -31,28 +34,31 @@ export const EditDialog: React.FC<Props> = ({ expense, onClose, onSave }) => {
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
           />
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              variant={type === 'monthly' ? 'contained' : 'outlined'}
-              sx={{ width: '50%' }}
-              color="error"
-              onClick={() => setType('monthly')}
-            >
-              Ежемесячная
-            </Button>
-            <Button
-              variant={type === 'one-time' ? 'contained' : 'outlined'}
-              color="secondary"
-              onClick={() => setType('one-time')}
-            >
-              Разовая
-            </Button>
-          </Box>
-          <Button variant="contained" sx={{ width: '50%' }} onClick={handleSave}>
+          {!hideOption && (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant={type === 'monthly' ? 'contained' : 'outlined'}
+                sx={{ width: '50%' }}
+                color="error"
+                onClick={() => setType('monthly')}
+              >
+                Ежемесячная
+              </Button>
+              <Button
+                variant={type === 'one-time' ? 'contained' : 'outlined'}
+                color="secondary"
+                sx={{ width: '50%' }}
+                onClick={() => setType('one-time')}
+              >
+                Разовая
+              </Button>
+            </Box>
+          )}
+          <Button variant="contained" fullWidth onClick={handleSave}>
             Сохранить
           </Button>
         </Box>
       </DialogContent>
-    </Dialog>
+    </StyledDialog>
   );
 };

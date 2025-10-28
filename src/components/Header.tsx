@@ -15,35 +15,41 @@ export const Header: React.FC<Props> = ({
   currentMonth,
   onMonthClick,
   onIncomeClick
-}) => (
-  <Paper
-    sx={{
-      p: 2,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      mb: 3
-    }}
-  >
-    <Box
+}) => {
+  const userName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name;
+  return (
+    <Paper
       sx={{
-        width: '100%',
+        p: 2,
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        mb: 3
       }}
     >
-      <Typography variant="h6" color="primary" onClick={onIncomeClick} sx={{ cursor: 'pointer' }}>
-        {income} ₽
+      <Typography variant="h6" color="primary" sx={{ cursor: 'pointer' }}>
+        {userName}
       </Typography>
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <Typography variant="h6" color="primary" onClick={onIncomeClick} sx={{ cursor: 'pointer' }}>
+          {income} ₽
+        </Typography>
 
-      <Typography variant="h6" color={remaining >= 0 ? 'success.main' : 'error.main'}>
-        {remaining} ₽
+        <Typography variant="h6" color={remaining >= 0 ? 'success.main' : 'error.main'}>
+          {remaining} ₽
+        </Typography>
+      </Box>
+      <Typography variant="h6" onClick={onMonthClick} sx={{ cursor: 'pointer' }}>
+        {currentMonth}
       </Typography>
-    </Box>
-    <Typography variant="h6" onClick={onMonthClick} sx={{ cursor: 'pointer' }}>
-      {currentMonth}
-    </Typography>
-  </Paper>
-);
+    </Paper>
+  );
+};
