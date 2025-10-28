@@ -16,7 +16,8 @@ export const Header: React.FC<Props> = ({
   onMonthClick,
   onIncomeClick
 }) => {
-  const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  // const tg = window.Telegram?.WebApp;
+  // const user = tg?.initDataUnsafe?.user;
   return (
     <Paper
       sx={{
@@ -28,9 +29,9 @@ export const Header: React.FC<Props> = ({
         mb: 3
       }}
     >
-      <Typography variant="h6" color="primary" sx={{ cursor: 'pointer' }}>
+      {/* <Typography variant="h6" color="primary" sx={{ cursor: 'pointer' }}>
         {user ? user.username : 'Нет данных о пользователе'}
-      </Typography>
+      </Typography> */}
       <Box
         sx={{
           width: '100%',
