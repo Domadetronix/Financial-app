@@ -7,6 +7,7 @@ interface Props {
   currentMonth: string;
   onMonthClick: () => void;
   onIncomeClick: () => void;
+  userName?: string;
 }
 
 export const Header: React.FC<Props> = ({
@@ -14,10 +15,9 @@ export const Header: React.FC<Props> = ({
   remaining,
   currentMonth,
   onMonthClick,
-  onIncomeClick
+  onIncomeClick,
+  userName
 }) => {
-  // const tg = window.Telegram?.WebApp;
-  // const user = tg?.initDataUnsafe?.user;
   return (
     <Paper
       sx={{
@@ -29,9 +29,11 @@ export const Header: React.FC<Props> = ({
         mb: 3
       }}
     >
-      {/* <Typography variant="h6" color="primary" sx={{ cursor: 'pointer' }}>
-        {user ? user.username : 'Нет данных о пользователе'}
-      </Typography> */}
+      {userName && (
+        <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'center', mb: 1 }}>
+          Привет, {userName}!
+        </Typography>
+      )}
       <Box
         sx={{
           width: '100%',
