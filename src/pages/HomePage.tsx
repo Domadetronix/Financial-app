@@ -20,22 +20,15 @@ import { IncomeEntryList } from '../components/IncomeEntryList';
 import { MonthlyIncomePickerDialog } from '../components/MonthlyIncomePickerDialog';
 import { MonthlyPickerDialog } from '../components/MonthlyPickerDialog';
 import { MonthSelector } from '../components/MonthSelector';
+import { loadAllData, saveExpenses, saveIncomeEntries } from '../lib/db';
 import { Expense, IncomeEntry, MonthExpense } from '../types';
-import {
-  loadExpenses,
-  loadIncomeEntries,
-  loadMonthlyExpenses,
-  loadMonthlyIncomes,
-  saveExpenses,
-  saveIncomeEntries,
-  saveMonthlyIncomes
-} from '../utils/storage';
 
 interface Props {
   userName: string;
+  userId: string;
 }
 
-export const HomePage: React.FC<Props> = ({ userName }) => {
+export const HomePage: React.FC<Props> = ({ userName, userId }) => {
   const today = new Date();
 
   const [currentMonth, setCurrentMonth] = useState<string>(today.toISOString().slice(0, 7));
@@ -54,11 +47,13 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
   const [incomeAmount, setIncomeAmount] = useState<number | ''>('');
 
   useEffect(() => {
-    setIncomeEntriesByMonth(loadIncomeEntries());
-    setExpensesByMonth(loadExpenses());
-    setMonthlyExpenses(loadMonthlyExpenses());
-    setMonthlyIncomes(loadMonthlyIncomes());
-  }, []);
+    loadAllData(userId).then((data) => {
+      setIncomeEntriesByMonth(data.incomeEntriesByMonth);
+      setExpensesByMonth(data.expensesByMonth);
+      setMonthlyExpenses(data.monthlyExpenses);
+      setMonthlyIncomes(data.monthlyIncomes);
+    });
+  }, [userId]);
 
   // ── Доходы ──────────────────────────────────────────────────────────────
 
@@ -67,7 +62,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
     const entry: IncomeEntry = { id: uuid(), name: incomeName, amount: Number(incomeAmount) };
     setIncomeEntriesByMonth((prev) => {
       const updated = { ...prev, [currentMonth]: [...(prev[currentMonth] || []), entry] };
-      saveIncomeEntries(updated);
+      saveIncomeEntries(userId, updated);
       return updated;
     });
     setIncomeName('');
@@ -80,7 +75,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
         ...prev,
         [currentMonth]: (prev[currentMonth] || []).filter((e) => e.id !== id)
       };
-      saveIncomeEntries(updated);
+      saveIncomeEntries(userId, updated);
       return updated;
     });
   };
@@ -91,7 +86,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
         e.id === updated.id ? updated : e
       );
       const updatedData = { ...prev, [currentMonth]: updatedList };
-      saveIncomeEntries(updatedData);
+      saveIncomeEntries(userId, updatedData);
       return updatedData;
     });
     setEditingIncome(null);
@@ -100,7 +95,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
   const handleAddFromMonthlyIncomes = (entries: IncomeEntry[]) => {
     setIncomeEntriesByMonth((prev) => {
       const updated = { ...prev, [currentMonth]: [...(prev[currentMonth] || []), ...entries] };
-      saveIncomeEntries(updated);
+      saveIncomeEntries(userId, updated);
       return updated;
     });
   };
@@ -111,7 +106,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
     const monthExpense: MonthExpense = { ...expense, closed: false };
     setExpensesByMonth((prev) => {
       const updated = { ...prev, [currentMonth]: [...(prev[currentMonth] || []), monthExpense] };
-      saveExpenses(updated);
+      saveExpenses(userId, updated);
       return updated;
     });
   };
@@ -119,7 +114,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
   const handleAddFromMonthlyExpenses = (expenses: MonthExpense[]) => {
     setExpensesByMonth((prev) => {
       const updated = { ...prev, [currentMonth]: [...(prev[currentMonth] || []), ...expenses] };
-      saveExpenses(updated);
+      saveExpenses(userId, updated);
       return updated;
     });
   };
@@ -130,7 +125,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
         ...prev,
         [currentMonth]: (prev[currentMonth] || []).filter((e) => e.id !== id)
       };
-      saveExpenses(updated);
+      saveExpenses(userId, updated);
       return updated;
     });
   };
@@ -141,7 +136,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
         e.id === updated.id ? { ...updated, closed: e.closed } : e
       );
       const updatedData = { ...prev, [currentMonth]: updatedList };
-      saveExpenses(updatedData);
+      saveExpenses(userId, updatedData);
       return updatedData;
     });
   };
@@ -152,7 +147,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
         e.id === id ? { ...e, closed: !e.closed } : e
       );
       const updated = { ...prev, [currentMonth]: updatedList };
-      saveExpenses(updated);
+      saveExpenses(userId, updated);
       return updated;
     });
   };
@@ -208,9 +203,7 @@ export const HomePage: React.FC<Props> = ({ userName }) => {
               label="Сумма"
               type="number"
               value={incomeAmount}
-              onChange={(e) =>
-                setIncomeAmount(e.target.value === '' ? '' : Number(e.target.value))
-              }
+              onChange={(e) => setIncomeAmount(e.target.value === '' ? '' : Number(e.target.value))}
               size="small"
               sx={{ width: 120 }}
             />

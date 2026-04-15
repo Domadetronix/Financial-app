@@ -5,15 +5,14 @@ import { v4 as uuid } from 'uuid';
 import { EditDialog } from '../components/EditDialog';
 import { ExpenseList } from '../components/ExpenseList';
 import { IncomeEntryList } from '../components/IncomeEntryList';
+import { loadAllData, saveMonthlyExpenses, saveMonthlyIncomes } from '../lib/db';
 import { Expense, IncomeEntry } from '../types';
-import {
-  loadMonthlyExpenses,
-  loadMonthlyIncomes,
-  saveMonthlyExpenses,
-  saveMonthlyIncomes
-} from '../utils/storage';
 
-export const MonthlyExpensesPage: React.FC = () => {
+interface Props {
+  userId: string;
+}
+
+export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
   const [monthlyExpenses, setMonthlyExpenses] = useState<Expense[]>([]);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [expenseName, setExpenseName] = useState('');
@@ -25,9 +24,11 @@ export const MonthlyExpensesPage: React.FC = () => {
   const [incomeAmount, setIncomeAmount] = useState<number | ''>('');
 
   useEffect(() => {
-    setMonthlyExpenses(loadMonthlyExpenses());
-    setMonthlyIncomes(loadMonthlyIncomes());
-  }, []);
+    loadAllData(userId).then((data) => {
+      setMonthlyExpenses(data.monthlyExpenses);
+      setMonthlyIncomes(data.monthlyIncomes);
+    });
+  }, [userId]);
 
   // ── Регулярные доходы ────────────────────────────────────────────────────
 
@@ -36,7 +37,7 @@ export const MonthlyExpensesPage: React.FC = () => {
     const entry: IncomeEntry = { id: uuid(), name: incomeName, amount: Number(incomeAmount) };
     const updated = [...monthlyIncomes, entry];
     setMonthlyIncomes(updated);
-    saveMonthlyIncomes(updated);
+    saveMonthlyIncomes(userId, updated);
     setIncomeName('');
     setIncomeAmount('');
   };
@@ -44,13 +45,13 @@ export const MonthlyExpensesPage: React.FC = () => {
   const handleDeleteIncome = (id: string) => {
     const updated = monthlyIncomes.filter((e) => e.id !== id);
     setMonthlyIncomes(updated);
-    saveMonthlyIncomes(updated);
+    saveMonthlyIncomes(userId, updated);
   };
 
   const handleSaveIncomeEdit = (updated: IncomeEntry) => {
     const updatedList = monthlyIncomes.map((e) => (e.id === updated.id ? updated : e));
     setMonthlyIncomes(updatedList);
-    saveMonthlyIncomes(updatedList);
+    saveMonthlyIncomes(userId, updatedList);
     setEditingIncome(null);
   };
 
@@ -61,7 +62,7 @@ export const MonthlyExpensesPage: React.FC = () => {
     const newExpense: Expense = { id: uuid(), name: expenseName, amount: Number(expenseAmount) };
     const updated = [...monthlyExpenses, newExpense];
     setMonthlyExpenses(updated);
-    saveMonthlyExpenses(updated);
+    saveMonthlyExpenses(userId, updated);
     setExpenseName('');
     setExpenseAmount('');
   };
@@ -69,13 +70,13 @@ export const MonthlyExpensesPage: React.FC = () => {
   const handleDeleteExpense = (id: string) => {
     const updated = monthlyExpenses.filter((e) => e.id !== id);
     setMonthlyExpenses(updated);
-    saveMonthlyExpenses(updated);
+    saveMonthlyExpenses(userId, updated);
   };
 
   const handleSaveExpenseEdit = (updated: Expense) => {
     const updatedList = monthlyExpenses.map((e) => (e.id === updated.id ? updated : e));
     setMonthlyExpenses(updatedList);
-    saveMonthlyExpenses(updatedList);
+    saveMonthlyExpenses(userId, updatedList);
   };
 
   return (
@@ -101,9 +102,7 @@ export const MonthlyExpensesPage: React.FC = () => {
             label="Сумма"
             type="number"
             value={incomeAmount}
-            onChange={(e) =>
-              setIncomeAmount(e.target.value === '' ? '' : Number(e.target.value))
-            }
+            onChange={(e) => setIncomeAmount(e.target.value === '' ? '' : Number(e.target.value))}
             size="small"
             sx={{ width: 120 }}
           />
@@ -138,9 +137,7 @@ export const MonthlyExpensesPage: React.FC = () => {
             label="Сумма"
             type="number"
             value={expenseAmount}
-            onChange={(e) =>
-              setExpenseAmount(e.target.value === '' ? '' : Number(e.target.value))
-            }
+            onChange={(e) => setExpenseAmount(e.target.value === '' ? '' : Number(e.target.value))}
             size="small"
             sx={{ width: 120 }}
           />
