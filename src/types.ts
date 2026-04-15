@@ -22,3 +22,34 @@ export interface AppData {
     monthlyExpenses: Expense[];
     monthlyIncomes: IncomeEntry[];
 }
+
+export interface GroupMember {
+    telegramId: string;
+    name: string;
+    photoUrl?: string;
+}
+
+export interface Group {
+    id: string;
+    name: string;
+    ownerTelegramId: string;
+    inviteCode: string;
+    memberIds: string[];
+    members: GroupMember[];
+    createdAt: string;
+}
+
+export interface GroupIncomeEntry extends IncomeEntry {
+    addedByTelegramId: string;
+}
+
+export interface GroupMonthExpense extends MonthExpense {
+    addedByTelegramId: string;
+}
+
+export interface GroupData {
+    incomeEntriesByMonth: Record<string, GroupIncomeEntry[]>;
+    expensesByMonth: Record<string, GroupMonthExpense[]>;
+    monthlyIncomes: IncomeEntry[];
+    monthlyExpenses: Expense[];
+}

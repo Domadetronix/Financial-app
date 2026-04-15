@@ -1,4 +1,4 @@
-import BarChartIcon from '@mui/icons-material/BarChart';
+import GroupsIcon from '@mui/icons-material/Group';
 import HomeIcon from '@mui/icons-material/Home';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
@@ -18,7 +18,7 @@ export const TabsNavigation: React.FC<Props> = ({ value, onChange }) => {
       <BottomNavigation value={value} onChange={(_, newValue) => onChange(newValue)} showLabels>
         <BottomNavigationAction label="Главная" value="home" icon={<HomeIcon />} />
         <BottomNavigationAction label="Регулярные" value="monthly" icon={<RepeatIcon />} />
-        <BottomNavigationAction disabled label="Статистика" value="stats" icon={<BarChartIcon />} />
+        <BottomNavigationAction label="Группы" value="groups" icon={<GroupsIcon />} />
       </BottomNavigation>
     </Paper>
   );
