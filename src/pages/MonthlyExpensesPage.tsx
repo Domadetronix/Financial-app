@@ -16,12 +16,12 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
   const [monthlyExpenses, setMonthlyExpenses] = useState<Expense[]>([]);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [expenseName, setExpenseName] = useState('');
-  const [expenseAmount, setExpenseAmount] = useState<number | ''>('');
+  const [expenseAmount, setExpenseAmount] = useState('');
 
   const [monthlyIncomes, setMonthlyIncomes] = useState<IncomeEntry[]>([]);
   const [editingIncome, setEditingIncome] = useState<IncomeEntry | null>(null);
   const [incomeName, setIncomeName] = useState('');
-  const [incomeAmount, setIncomeAmount] = useState<number | ''>('');
+  const [incomeAmount, setIncomeAmount] = useState('');
 
   useEffect(() => {
     loadAllData(userId).then((data) => {
@@ -33,8 +33,9 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
   // ── Регулярные доходы ────────────────────────────────────────────────────
 
   const handleAddIncome = () => {
-    if (!incomeName || incomeAmount === '') return;
-    const entry: IncomeEntry = { id: uuid(), name: incomeName, amount: Number(incomeAmount) };
+    const parsed = parseFloat(incomeAmount);
+    if (!incomeName || isNaN(parsed) || parsed < 0) return;
+    const entry: IncomeEntry = { id: uuid(), name: incomeName, amount: parsed };
     const updated = [...monthlyIncomes, entry];
     setMonthlyIncomes(updated);
     saveMonthlyIncomes(userId, updated);
@@ -58,8 +59,9 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
   // ── Регулярные траты ─────────────────────────────────────────────────────
 
   const handleAddExpense = () => {
-    if (!expenseName || expenseAmount === '') return;
-    const newExpense: Expense = { id: uuid(), name: expenseName, amount: Number(expenseAmount) };
+    const parsed = parseFloat(expenseAmount);
+    if (!expenseName || isNaN(parsed) || parsed < 0) return;
+    const newExpense: Expense = { id: uuid(), name: expenseName, amount: parsed };
     const updated = [...monthlyExpenses, newExpense];
     setMonthlyExpenses(updated);
     saveMonthlyExpenses(userId, updated);
@@ -100,9 +102,9 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
           />
           <TextField
             label="Сумма"
-            type="number"
             value={incomeAmount}
-            onChange={(e) => setIncomeAmount(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) => setIncomeAmount(e.target.value)}
+            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
             size="small"
             sx={{ width: 120 }}
           />
@@ -135,9 +137,9 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
           />
           <TextField
             label="Сумма"
-            type="number"
             value={expenseAmount}
-            onChange={(e) => setExpenseAmount(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) => setExpenseAmount(e.target.value)}
+            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
             size="small"
             sx={{ width: 120 }}
           />

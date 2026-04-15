@@ -44,7 +44,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
   const [monthlyExpensePickerOpen, setMonthlyExpensePickerOpen] = useState(false);
   const [monthlyIncomePickerOpen, setMonthlyIncomePickerOpen] = useState(false);
   const [incomeName, setIncomeName] = useState('');
-  const [incomeAmount, setIncomeAmount] = useState<number | ''>('');
+  const [incomeAmount, setIncomeAmount] = useState('');
 
   useEffect(() => {
     loadAllData(userId).then((data) => {
@@ -58,8 +58,9 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
   // ── Доходы ──────────────────────────────────────────────────────────────
 
   const handleAddIncome = () => {
-    if (!incomeName || incomeAmount === '') return;
-    const entry: IncomeEntry = { id: uuid(), name: incomeName, amount: Number(incomeAmount) };
+    const parsed = parseFloat(incomeAmount);
+    if (!incomeName || isNaN(parsed) || parsed < 0) return;
+    const entry: IncomeEntry = { id: uuid(), name: incomeName, amount: parsed };
     setIncomeEntriesByMonth((prev) => {
       const updated = { ...prev, [currentMonth]: [...(prev[currentMonth] || []), entry] };
       saveIncomeEntries(userId, updated);
@@ -152,17 +153,6 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
     });
   };
 
-  // ── Месяц ───────────────────────────────────────────────────────────────
-
-  const generateFiveMonths = (): string[] => {
-    const months: string[] = [];
-    for (let i = -1; i <= 4; i++) {
-      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
-      months.push(date.toISOString().slice(0, 7));
-    }
-    return months;
-  };
-
   // ── Расчёт ──────────────────────────────────────────────────────────────
 
   const currentIncomeEntries = incomeEntriesByMonth[currentMonth] || [];
@@ -201,21 +191,19 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
             />
             <TextField
               label="Сумма"
-              type="number"
               value={incomeAmount}
-              onChange={(e) => setIncomeAmount(e.target.value === '' ? '' : Number(e.target.value))}
+              onChange={(e) => setIncomeAmount(e.target.value)}
+              slotProps={{ htmlInput: { inputMode: 'decimal' } }}
               size="small"
               sx={{ width: 120 }}
             />
           </Box>
-          <Box display="flex" gap={1} mb={1}>
-            <Button variant="contained" fullWidth onClick={handleAddIncome}>
-              Добавить
-            </Button>
-            <Button variant="outlined" fullWidth onClick={() => setMonthlyIncomePickerOpen(true)}>
-              + Из регулярных
-            </Button>
-          </Box>
+          <Button variant="contained" fullWidth onClick={handleAddIncome}>
+            Добавить
+          </Button>
+          <Button variant="outlined" fullWidth onClick={() => setMonthlyIncomePickerOpen(true)}>
+            + Из регулярных
+          </Button>
           <IncomeEntryList
             entries={currentIncomeEntries}
             onDelete={handleDeleteIncome}
@@ -256,7 +244,6 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
       <MonthSelector
         open={monthSelectorOpen}
         onClose={() => setMonthSelectorOpen(false)}
-        months={generateFiveMonths()}
         selected={currentMonth}
         onSelect={(m) => {
           setCurrentMonth(m);

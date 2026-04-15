@@ -10,12 +10,13 @@ interface Props {
 
 export const ExpenseForm: React.FC<Props> = ({ onAdd }) => {
   const [name, setName] = useState('');
-  const [amount, setAmount] = useState<number | ''>('');
+  const [amount, setAmount] = useState('');
 
   const handleAdd = () => {
-    if (!name || amount === '' || amount < 0) return;
+    const parsed = parseFloat(amount);
+    if (!name || isNaN(parsed) || parsed < 0) return;
 
-    onAdd({ id: uuid(), name, amount: Number(amount) });
+    onAdd({ id: uuid(), name, amount: parsed });
     setName('');
     setAmount('');
   };
@@ -31,9 +32,9 @@ export const ExpenseForm: React.FC<Props> = ({ onAdd }) => {
         />
         <TextField
           label="Сумма"
-          type="number"
           value={amount}
-          onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
+          onChange={(e) => setAmount(e.target.value)}
+          slotProps={{ htmlInput: { inputMode: 'decimal' } }}
           sx={{ width: 120 }}
         />
       </Box>
