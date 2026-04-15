@@ -64,9 +64,9 @@ export const GroupSettingsDialog: React.FC<Props> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>Настройки группы</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TextField
-          sx={{ pt: '4px' }}
+          sx={{ mt: 1.5 }}
           label="Название группы"
           value={name}
           onChange={(e) => setName(e.target.value)}
