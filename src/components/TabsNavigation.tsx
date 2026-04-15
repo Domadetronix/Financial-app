@@ -11,7 +11,10 @@ interface Props {
 
 export const TabsNavigation: React.FC<Props> = ({ value, onChange }) => {
   return (
-    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, pb: '32px' }} elevation={3}>
+    <Paper
+      sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, pb: '32px', zIndex: 900 }}
+      elevation={3}
+    >
       <BottomNavigation value={value} onChange={(_, newValue) => onChange(newValue)} showLabels>
         <BottomNavigationAction label="Главная" value="home" icon={<HomeIcon />} />
         <BottomNavigationAction label="Регулярные" value="monthly" icon={<RepeatIcon />} />
