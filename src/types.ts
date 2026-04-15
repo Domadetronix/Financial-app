@@ -10,8 +10,15 @@ export interface MonthExpense extends Expense {
 
 export const isMonthExpense = (e: Expense): e is MonthExpense => 'closed' in e;
 
+export interface IncomeEntry {
+    id: string;
+    name: string;
+    amount: number;
+}
+
 export interface AppData {
-    incomeByMonth: Record<string, number>;
+    incomeEntriesByMonth: Record<string, IncomeEntry[]>;
     expensesByMonth: Record<string, MonthExpense[]>;
     monthlyExpenses: Expense[];
+    monthlyIncomes: IncomeEntry[];
 }

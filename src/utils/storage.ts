@@ -1,44 +1,71 @@
-import { Expense, MonthExpense } from "../types";
+import { v4 as uuid } from 'uuid';
 
-const APP_DATA_KEY = "appData";
+import { Expense, IncomeEntry, MonthExpense } from '../types';
+
+const APP_DATA_KEY = 'appData';
 
 interface AppData {
-    incomeByMonth: Record<string, number>;
+    incomeEntriesByMonth: Record<string, IncomeEntry[]>;
     expensesByMonth: Record<string, MonthExpense[]>;
     monthlyExpenses: Expense[];
+    monthlyIncomes: IncomeEntry[];
 }
 
-// Получаем всё приложение из localStorage
 const loadAppData = (): AppData => {
-    const data = localStorage.getItem(APP_DATA_KEY);
-    if (!data) {
-        return { incomeByMonth: {}, expensesByMonth: {}, monthlyExpenses: [] };
+    const raw = localStorage.getItem(APP_DATA_KEY);
+    if (!raw) {
+        return { incomeEntriesByMonth: {}, expensesByMonth: {}, monthlyExpenses: [], monthlyIncomes: [] };
     }
-    return JSON.parse(data);
+    const data = JSON.parse(raw);
+
+    // Миграция: старый формат incomeByMonth -> incomeEntriesByMonth
+    if (data.incomeByMonth && !data.incomeEntriesByMonth) {
+        data.incomeEntriesByMonth = {};
+        Object.entries(data.incomeByMonth as Record<string, number>).forEach(([month, amount]) => {
+            if (amount > 0) {
+                data.incomeEntriesByMonth[month] = [{ id: uuid(), name: 'Доход', amount }];
+            }
+        });
+        delete data.incomeByMonth;
+    }
+
+    if (!data.incomeEntriesByMonth) data.incomeEntriesByMonth = {};
+    if (!data.monthlyIncomes) data.monthlyIncomes = [];
+    if (!data.monthlyExpenses) data.monthlyExpenses = [];
+    if (!data.expensesByMonth) data.expensesByMonth = {};
+
+    return data as AppData;
 };
 
-// Сохраняем всё приложение в localStorage
 const saveAppData = (data: AppData) => {
     localStorage.setItem(APP_DATA_KEY, JSON.stringify(data));
 };
 
-// ================== Доход ==================
-export const loadIncome = (month?: string): number => {
-    const data = loadAppData();
-    if (month) return data.incomeByMonth[month] || 0;
-    return 0;
+// ================== Доходы за месяц ==================
+export const loadIncomeEntries = (): Record<string, IncomeEntry[]> => {
+    return loadAppData().incomeEntriesByMonth;
 };
 
-export const saveIncome = (month: string, income: number) => {
+export const saveIncomeEntries = (incomeEntriesByMonth: Record<string, IncomeEntry[]>) => {
     const data = loadAppData();
-    data.incomeByMonth[month] = income;
+    data.incomeEntriesByMonth = incomeEntriesByMonth;
+    saveAppData(data);
+};
+
+// ================== Шаблоны доходов ==================
+export const loadMonthlyIncomes = (): IncomeEntry[] => {
+    return loadAppData().monthlyIncomes;
+};
+
+export const saveMonthlyIncomes = (incomes: IncomeEntry[]) => {
+    const data = loadAppData();
+    data.monthlyIncomes = incomes;
     saveAppData(data);
 };
 
 // ================== Траты ==================
 export const loadExpenses = (): Record<string, MonthExpense[]> => {
-    const data = loadAppData();
-    return data.expensesByMonth;
+    return loadAppData().expensesByMonth;
 };
 
 export const saveExpenses = (expensesByMonth: Record<string, MonthExpense[]>) => {
@@ -47,10 +74,9 @@ export const saveExpenses = (expensesByMonth: Record<string, MonthExpense[]>) =>
     saveAppData(data);
 };
 
-// ================== Ежемесячные траты ==================
+// ================== Шаблоны трат ==================
 export const loadMonthlyExpenses = (): Expense[] => {
-    const data = loadAppData();
-    return data.monthlyExpenses;
+    return loadAppData().monthlyExpenses;
 };
 
 export const saveMonthlyExpenses = (expenses: Expense[]) => {
