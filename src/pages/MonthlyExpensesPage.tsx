@@ -1,10 +1,9 @@
-import { Box, Typography, Button, Container, TextField, Stack } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import { Box, Button, Container, Stack, TextField, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-import { ExpenseList } from '@/components/ExpenseList';
-
 import { EditDialog } from '../components/EditDialog';
+import { ExpenseList } from '../components/ExpenseList';
 import { Expense } from '../types';
 import { loadMonthlyExpenses, saveMonthlyExpenses } from '../utils/storage';
 
@@ -21,10 +20,12 @@ export const MonthlyExpensesPage: React.FC = () => {
   const handleAdd = () => {
     if (!name || amount === '') return;
 
-    const newExpense: Expense = { id: uuid(), name, amount, type: 'monthly' };
+    const newExpense: Expense = { id: uuid(), name, amount: Number(amount) };
     const updated = [...monthlyExpenses, newExpense];
     setMonthlyExpenses(updated);
     saveMonthlyExpenses(updated);
+    setName('');
+    setAmount('');
   };
 
   const handleDelete = (id: string) => {
@@ -43,7 +44,7 @@ export const MonthlyExpensesPage: React.FC = () => {
     <Container>
       <Stack sx={{ alignItems: 'center' }} spacing={2}>
         <Typography variant="h6">Ежемесячные траты</Typography>
-        <Box display="flex" gap={2} width={'100%'}>
+        <Box display="flex" gap={2} width="100%">
           <TextField
             label="Название траты"
             value={name}
@@ -70,7 +71,6 @@ export const MonthlyExpensesPage: React.FC = () => {
           expense={editingExpense}
           onClose={() => setEditingExpense(null)}
           onSave={handleSaveEdit}
-          hideOption={true}
         />
       )}
     </Container>

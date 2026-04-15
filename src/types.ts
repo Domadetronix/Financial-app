@@ -2,19 +2,16 @@ export interface Expense {
     id: string;
     name: string;
     amount: number;
-    type: "monthly" | "one-time";
 }
 
-
-export interface EditData {
-    id: string;
-    name: string;
-    amount: number;
-    type: "monthly" | "one-time";
+export interface MonthExpense extends Expense {
+    closed: boolean;
 }
+
+export const isMonthExpense = (e: Expense): e is MonthExpense => 'closed' in e;
 
 export interface AppData {
-    incomeByMonth: Record<string, number>; // например: { "2025-10": 120000 }
-    expensesByMonth: Record<string, Expense[]>; // траты по месяцам
-    monthlyExpenses: Expense[]; // база постоянных трат
+    incomeByMonth: Record<string, number>;
+    expensesByMonth: Record<string, MonthExpense[]>;
+    monthlyExpenses: Expense[];
 }

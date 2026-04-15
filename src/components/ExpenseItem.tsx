@@ -1,24 +1,30 @@
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, ListItem, ListItemText, IconButton } from '@mui/material';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import { Box, IconButton, ListItem, ListItemText } from '@mui/material';
 import React from 'react';
 
-import { Expense } from '../types';
+import { Expense, isMonthExpense } from '../types';
 
 interface Props {
   expense: Expense;
   onDelete: (id: string) => void;
   onEdit: (expense: Expense) => void;
+  onClose?: (id: string) => void;
 }
 
-export const ExpenseItem: React.FC<Props> = ({ expense, onDelete, onEdit }) => {
+export const ExpenseItem: React.FC<Props> = ({ expense, onDelete, onEdit, onClose }) => {
+  const closed = isMonthExpense(expense) && expense.closed;
+
   return (
     <ListItem
       sx={{
         border: '1px solid #ddd',
         borderRadius: 2,
         my: 1,
-        paddingRight: '96px'
+        paddingRight: '96px',
+        opacity: closed ? 0.5 : 1
       }}
       secondaryAction={
         <>
@@ -31,12 +37,16 @@ export const ExpenseItem: React.FC<Props> = ({ expense, onDelete, onEdit }) => {
         </>
       }
     >
-      <Box display={'flex'} width={'100%'} alignItems={'center'}>
+      <Box display="flex" width="100%" alignItems="center" gap={1}>
+        {onClose && (
+          <IconButton size="small" onClick={() => onClose(expense.id)} sx={{ p: 0.5 }}>
+            {closed ? <CheckCircleIcon color="success" /> : <RadioButtonUncheckedIcon />}
+          </IconButton>
+        )}
         <ListItemText
           primary={expense.name}
-          secondary={`${expense.amount} ₽ | ${
-            expense.type === 'monthly' ? 'Ежемесячная' : 'Разовая'
-          }`}
+          secondary={`${expense.amount} ₽`}
+          primaryTypographyProps={closed ? { sx: { textDecoration: 'line-through' } } : undefined}
         />
       </Box>
     </ListItem>

@@ -1,10 +1,10 @@
-import { Expense } from "../types";
+import { Expense, MonthExpense } from "../types";
 
 const APP_DATA_KEY = "appData";
 
 interface AppData {
     incomeByMonth: Record<string, number>;
-    expensesByMonth: Record<string, Expense[]>;
+    expensesByMonth: Record<string, MonthExpense[]>;
     monthlyExpenses: Expense[];
 }
 
@@ -36,12 +36,12 @@ export const saveIncome = (month: string, income: number) => {
 };
 
 // ================== Траты ==================
-export const loadExpenses = (): Record<string, Expense[]> => {
+export const loadExpenses = (): Record<string, MonthExpense[]> => {
     const data = loadAppData();
     return data.expensesByMonth;
 };
 
-export const saveExpenses = (expensesByMonth: Record<string, Expense[]>) => {
+export const saveExpenses = (expensesByMonth: Record<string, MonthExpense[]>) => {
     const data = loadAppData();
     data.expensesByMonth = expensesByMonth;
     saveAppData(data);
