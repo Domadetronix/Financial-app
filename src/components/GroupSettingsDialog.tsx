@@ -1,5 +1,6 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ShareIcon from '@mui/icons-material/Share';
 import {
   Avatar,
   Box,
@@ -44,6 +45,7 @@ export const GroupSettingsDialog: React.FC<Props> = ({
 }) => {
   const [name, setName] = useState(group.name);
   const [copied, setCopied] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const isOwner = group.ownerTelegramId === currentUserId;
 
   useEffect(() => {
@@ -61,93 +63,116 @@ export const GroupSettingsDialog: React.FC<Props> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShare = () => {
+    const text = encodeURIComponent(`Присоединяйся к группе «${group.name}»! Код: ${group.inviteCode}`);
+    window.Telegram?.WebApp?.openTelegramLink(`https://t.me/share/url?url=${group.inviteCode}&text=${text}`);
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Настройки группы</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <TextField
-          sx={{ mt: 1.5 }}
-          label="Название группы"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={handleRename}
-          size="small"
-          fullWidth
-        />
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+        <DialogTitle>Настройки группы</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            sx={{ mt: 1.5 }}
+            label="Название группы"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={handleRename}
+            size="small"
+            fullWidth
+          />
 
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Код приглашения
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-            <Typography
-              variant="h6"
-              sx={{ fontFamily: 'monospace', letterSpacing: 4, flexGrow: 1 }}
-            >
-              {group.inviteCode}
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Код приглашения
             </Typography>
-            <IconButton size="small" onClick={handleCopy}>
-              <ContentCopyIcon fontSize="small" />
-            </IconButton>
-            {copied && (
-              <Typography variant="caption" color="success.main">
-                Скопировано
-              </Typography>
-            )}
-          </Box>
-        </Box>
-
-        <Divider />
-
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Участники
-          </Typography>
-          <List dense disablePadding>
-            {group.members.map((member) => (
-              <ListItem
-                key={member.telegramId}
-                disableGutters
-                secondaryAction={
-                  isOwner && member.telegramId !== currentUserId ? (
-                    <IconButton
-                      size="small"
-                      edge="end"
-                      onClick={() => onRemoveMember(member.telegramId)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  ) : null
-                }
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontFamily: 'monospace', letterSpacing: 4, flexGrow: 1 }}
               >
-                <ListItemAvatar>
-                  <Avatar src={member.photoUrl} sx={{ width: 32, height: 32 }}>
-                    {member.name[0]}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={member.name}
-                  secondary={member.telegramId === group.ownerTelegramId ? 'Владелец' : null}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}>
-        {isOwner ? (
-          <Button color="error" onClick={onDelete} fullWidth>
-            Удалить группу
+                {group.inviteCode}
+              </Typography>
+              <IconButton size="small" onClick={handleCopy}>
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={handleShare}>
+                <ShareIcon fontSize="small" />
+              </IconButton>
+              {copied && (
+                <Typography variant="caption" color="success.main">
+                  Скопировано
+                </Typography>
+              )}
+            </Box>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Участники
+            </Typography>
+            <List dense disablePadding>
+              {group.members.map((member) => (
+                <ListItem
+                  key={member.telegramId}
+                  disableGutters
+                  secondaryAction={
+                    isOwner && member.telegramId !== currentUserId ? (
+                      <IconButton
+                        size="small"
+                        edge="end"
+                        onClick={() => onRemoveMember(member.telegramId)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    ) : null
+                  }
+                >
+                  <ListItemAvatar>
+                    <Avatar src={member.photoUrl} sx={{ width: 32, height: 32 }}>
+                      {member.name[0]}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={member.name}
+                    secondary={member.telegramId === group.ownerTelegramId ? 'Владелец' : null}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}>
+          {isOwner ? (
+            <Button color="error" onClick={() => setDeleteConfirmOpen(true)} fullWidth>
+              Удалить группу
+            </Button>
+          ) : (
+            <Button color="error" onClick={onLeave} fullWidth>
+              Покинуть группу
+            </Button>
+          )}
+          <Button onClick={onClose} fullWidth>
+            Закрыть
           </Button>
-        ) : (
-          <Button color="error" onClick={onLeave} fullWidth>
-            Покинуть группу
-          </Button>
-        )}
-        <Button onClick={onClose} fullWidth>
-          Закрыть
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Удалить группу?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Группа «{group.name}» и все её данные будут удалены безвозвратно.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>Отмена</Button>
+          <Button color="error" onClick={onDelete}>Удалить</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };

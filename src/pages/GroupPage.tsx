@@ -239,7 +239,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
         <AccordionDetails sx={{ pt: 0 }}>
           <Box display="flex" gap={1} mb={1}>
             <TextField
-              label="Источник"
+              label="Название"
               value={incomeName}
               onChange={e => setIncomeName(e.target.value)}
               size="small"
@@ -254,10 +254,10 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
               sx={{ width: 120 }}
             />
           </Box>
-          <Button variant="contained" fullWidth onClick={handleAddIncome}>
+          <Button variant="contained" fullWidth onClick={handleAddIncome} sx={{ mb: 1 }}>
             Добавить
           </Button>
-          <Button variant="outlined" fullWidth onClick={() => setMonthlyIncomePickerOpen(true)}>
+          <Button variant="outlined" fullWidth onClick={() => setMonthlyIncomePickerOpen(true)} sx={{ mb: 1 }}>
             + Из регулярных
           </Button>
           <IncomeEntryList

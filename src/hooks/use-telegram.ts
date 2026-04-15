@@ -23,6 +23,7 @@ export interface TelegramWebApp {
     offClick: (cb: () => void) => void;
   };
   themeParams?: Record<string, string>;
+  openTelegramLink: (url: string) => void;
 }
 
 declare global {

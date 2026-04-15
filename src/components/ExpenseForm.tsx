@@ -1,4 +1,4 @@
-import { Box, Button, Stack, TextField } from '@mui/material';
+import { Box, Button, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
@@ -22,12 +22,13 @@ export const ExpenseForm: React.FC<Props> = ({ onAdd }) => {
   };
 
   return (
-    <Stack spacing={2}>
-      <Box display="flex" gap={2}>
+    <Box>
+      <Box display="flex" gap={1} mb={1}>
         <TextField
-          label="Название траты"
+          label="Название"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          size="small"
           fullWidth
         />
         <TextField
@@ -35,12 +36,13 @@ export const ExpenseForm: React.FC<Props> = ({ onAdd }) => {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+          size="small"
           sx={{ width: 120 }}
         />
       </Box>
-      <Button variant="contained" fullWidth onClick={handleAdd}>
+      <Button variant="contained" fullWidth onClick={handleAdd} sx={{ mb: 1 }}>
         Добавить
       </Button>
-    </Stack>
+    </Box>
   );
 };

@@ -13,6 +13,7 @@ import {
   ListItemButton,
   ListItemSecondaryAction,
   ListItemText,
+  Stack,
   TextField,
   Typography
 } from '@mui/material';
@@ -120,7 +121,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
         </List>
       )}
 
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Stack spacing={1}>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -132,7 +133,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
         <Button variant="outlined" onClick={() => setJoinOpen(true)} fullWidth>
           Вступить по коду
         </Button>
-      </Box>
+      </Stack>
 
       {/* Диалог создания */}
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} fullWidth maxWidth="xs">
@@ -149,11 +150,11 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             sx={{ mt: 1 }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateOpen(false)}>Отмена</Button>
-          <Button onClick={handleCreate} disabled={!newGroupName.trim() || creating} variant="contained">
+        <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}>
+          <Button onClick={handleCreate} disabled={!newGroupName.trim() || creating} variant="contained" fullWidth>
             Создать
           </Button>
+          <Button onClick={() => setCreateOpen(false)} fullWidth>Отмена</Button>
         </DialogActions>
       </Dialog>
 
@@ -169,17 +170,17 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             onKeyDown={e => e.key === 'Enter' && handleJoin()}
             fullWidth
             size="small"
-            sx={{ mt: 1, fontFamily: 'monospace' }}
+            sx={{ mt: 1 }}
             slotProps={{ htmlInput: { style: { letterSpacing: 4, fontFamily: 'monospace' } } }}
             error={!!joinError}
             helperText={joinError}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setJoinOpen(false); setJoinError(''); }}>Отмена</Button>
-          <Button onClick={handleJoin} disabled={!inviteCode.trim() || joining} variant="contained">
+        <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}>
+          <Button onClick={handleJoin} disabled={!inviteCode.trim() || joining} variant="contained" fullWidth>
             Вступить
           </Button>
+          <Button onClick={() => { setJoinOpen(false); setJoinError(''); }} fullWidth>Отмена</Button>
         </DialogActions>
       </Dialog>
     </Box>

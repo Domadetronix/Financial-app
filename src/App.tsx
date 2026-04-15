@@ -24,7 +24,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Box sx={{ py: '84px', minHeight: '100vh', backgroundColor: 'white' }}>
+    <Box sx={{ pt: '42px', pb: '84px', minHeight: '100vh', backgroundColor: 'white' }}>
       {tab === 'home' && <HomePage userName={userName} userId={userId} />}
       {tab === 'monthly' && <MonthlyExpensesPage userId={userId} />}
       {tab === 'groups' && !selectedGroupId && (
