@@ -66,9 +66,10 @@ export const GroupSettingsDialog: React.FC<Props> = ({
       <DialogTitle>Настройки группы</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
         <TextField
+          sx={{ pt: '4px' }}
           label="Название группы"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           onBlur={handleRename}
           size="small"
           fullWidth
@@ -103,7 +104,7 @@ export const GroupSettingsDialog: React.FC<Props> = ({
             Участники
           </Typography>
           <List dense disablePadding>
-            {group.members.map(member => (
+            {group.members.map((member) => (
               <ListItem
                 key={member.telegramId}
                 disableGutters
