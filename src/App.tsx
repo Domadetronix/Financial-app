@@ -12,7 +12,7 @@ const App: React.FC = () => {
   const userName = user?.first_name ?? 'Гость';
 
   return (
-    <Box sx={{ pt: '84px', height: '100vh', backgroundColor: 'white' }}>
+    <Box sx={{ pt: '84px', minHeight: '100vh', backgroundColor: 'white' }}>
       {tab === 'home' && <HomePage userName={userName} />}
       {tab === 'monthly' && <MonthlyExpensesPage />}
       <TabsNavigation value={tab} onChange={setTab} />
