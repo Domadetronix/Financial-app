@@ -10,6 +10,22 @@ interface Props {
   userName?: string;
 }
 
+type TgDebugInfo =
+  | { connected: false }
+  | { connected: true; version: string; platform: string; hasInitData: boolean; user: object | null };
+
+const getTelegramDebugInfo = (): TgDebugInfo => {
+  const tg = window?.Telegram?.WebApp;
+  if (!tg) return { connected: false };
+  return {
+    connected: true,
+    version: tg.version ?? '?',
+    platform: tg.platform ?? '?',
+    hasInitData: Boolean(tg.initData),
+    user: tg.initDataUnsafe?.user ?? null
+  };
+};
+
 export const Header: React.FC<Props> = ({
   income,
   remaining,
@@ -18,6 +34,8 @@ export const Header: React.FC<Props> = ({
   onIncomeClick,
   userName
 }) => {
+  const debug = getTelegramDebugInfo();
+
   return (
     <Paper
       sx={{
@@ -53,6 +71,29 @@ export const Header: React.FC<Props> = ({
       <Typography variant="h6" onClick={onMonthClick} sx={{ cursor: 'pointer' }}>
         {currentMonth}
       </Typography>
+
+      {/* DEBUG — удалить после диагностики */}
+      <Box
+        sx={{
+          mt: 1,
+          p: 1,
+          width: '100%',
+          backgroundColor: '#f5f5f5',
+          borderRadius: 1,
+          fontSize: '10px',
+          fontFamily: 'monospace',
+          wordBreak: 'break-all'
+        }}
+      >
+        <div>tg: {debug.connected ? '✅' : '❌ не подключён'}</div>
+        {debug.connected && (
+          <>
+            <div>ver: {debug.version} | platform: {debug.platform}</div>
+            <div>initData: {debug.hasInitData ? '✅' : '❌ пусто'}</div>
+            <div>user: {debug.user ? JSON.stringify(debug.user) : '❌ null'}</div>
+          </>
+        )}
+      </Box>
     </Paper>
   );
 };

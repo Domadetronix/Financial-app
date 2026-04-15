@@ -9,7 +9,10 @@ interface TelegramUser {
 }
 
 export interface TelegramWebApp {
+  initData: string;
   initDataUnsafe?: { user?: TelegramUser };
+  version: string;
+  platform: string;
   ready: () => void;
   MainButton: {
     text: string;
