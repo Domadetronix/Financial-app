@@ -94,7 +94,7 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
         </Typography>
         <Box display="flex" gap={1}>
           <TextField
-            label="Источник"
+            label="Название"
             value={incomeName}
             onChange={(e) => setIncomeName(e.target.value)}
             size="small"
@@ -129,7 +129,7 @@ export const MonthlyExpensesPage: React.FC<Props> = ({ userId }) => {
         </Typography>
         <Box display="flex" gap={1}>
           <TextField
-            label="Название траты"
+            label="Название"
             value={expenseName}
             onChange={(e) => setExpenseName(e.target.value)}
             size="small"

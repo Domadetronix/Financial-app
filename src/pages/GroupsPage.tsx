@@ -4,6 +4,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import {
   Box,
   Button,
+  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -54,9 +55,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <GroupIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-        <Typography color="text.secondary">
-          Группы доступны только в Telegram
-        </Typography>
+        <Typography color="text.secondary">Группы доступны только в Telegram</Typography>
       </Box>
     );
   }
@@ -65,7 +64,12 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
     const name = newGroupName.trim();
     if (!name) return;
     setCreating(true);
-    const groupId = await createGroup(userId, user?.first_name ?? 'Участник', name, user?.photo_url);
+    const groupId = await createGroup(
+      userId,
+      user?.first_name ?? 'Участник',
+      name,
+      user?.photo_url
+    );
     setCreating(false);
     setCreateOpen(false);
     setNewGroupName('');
@@ -93,8 +97,8 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
+    <Container>
+      <Typography textAlign="center" variant="h6" mb={2}>
         Группы
       </Typography>
 
@@ -108,10 +112,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             <React.Fragment key={group.id}>
               {idx > 0 && <Divider />}
               <ListItemButton onClick={() => onSelectGroup(group.id)}>
-                <ListItemText
-                  primary={group.name}
-                  secondary={`${group.members.length} уч.`}
-                />
+                <ListItemText primary={group.name} secondary={`${group.members.length} уч.`} />
                 <ListItemSecondaryAction>
                   <ChevronRightIcon color="action" />
                 </ListItemSecondaryAction>
@@ -143,31 +144,51 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             autoFocus
             label="Название"
             value={newGroupName}
-            onChange={e => setNewGroupName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleCreate()}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             fullWidth
             size="small"
             sx={{ mt: 1 }}
           />
         </DialogContent>
-        <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}>
-          <Button onClick={handleCreate} disabled={!newGroupName.trim() || creating} variant="contained" fullWidth>
+        <DialogActions
+          sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}
+        >
+          <Button
+            onClick={handleCreate}
+            disabled={!newGroupName.trim() || creating}
+            variant="contained"
+            fullWidth
+          >
             Создать
           </Button>
-          <Button onClick={() => setCreateOpen(false)} fullWidth>Отмена</Button>
+          <Button onClick={() => setCreateOpen(false)} fullWidth>
+            Отмена
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Диалог вступления */}
-      <Dialog open={joinOpen} onClose={() => { setJoinOpen(false); setJoinError(''); }} fullWidth maxWidth="xs">
+      <Dialog
+        open={joinOpen}
+        onClose={() => {
+          setJoinOpen(false);
+          setJoinError('');
+        }}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>Вступить по коду</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             label="Код приглашения"
             value={inviteCode}
-            onChange={e => { setInviteCode(e.target.value.toUpperCase()); setJoinError(''); }}
-            onKeyDown={e => e.key === 'Enter' && handleJoin()}
+            onChange={(e) => {
+              setInviteCode(e.target.value.toUpperCase());
+              setJoinError('');
+            }}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
             fullWidth
             size="small"
             sx={{ mt: 1 }}
@@ -176,13 +197,28 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             helperText={joinError}
           />
         </DialogContent>
-        <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}>
-          <Button onClick={handleJoin} disabled={!inviteCode.trim() || joining} variant="contained" fullWidth>
+        <DialogActions
+          sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}
+        >
+          <Button
+            onClick={handleJoin}
+            disabled={!inviteCode.trim() || joining}
+            variant="contained"
+            fullWidth
+          >
             Вступить
           </Button>
-          <Button onClick={() => { setJoinOpen(false); setJoinError(''); }} fullWidth>Отмена</Button>
+          <Button
+            onClick={() => {
+              setJoinOpen(false);
+              setJoinError('');
+            }}
+            fullWidth
+          >
+            Отмена
+          </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Container>
   );
 };
