@@ -1,0 +1,24 @@
+import GroupsIcon from '@mui/icons-material/Group';
+import HomeIcon from '@mui/icons-material/Home';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
+
+interface Props {
+  value: string;
+  onChange: (val: string) => void;
+}
+
+export function TabsNavigation({ value, onChange }: Props) {
+  return (
+    <Paper
+      sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, pb: '32px', zIndex: 900 }}
+      elevation={3}
+    >
+      <BottomNavigation value={value} onChange={(_, newValue) => onChange(newValue)} showLabels>
+        <BottomNavigationAction label="Главная" value="home" icon={<HomeIcon />} />
+        <BottomNavigationAction label="Регулярные" value="monthly" icon={<RepeatIcon />} />
+        <BottomNavigationAction label="Группы" value="groups" icon={<GroupsIcon />} />
+      </BottomNavigation>
+    </Paper>
+  );
+}

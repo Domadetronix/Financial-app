@@ -12,11 +12,15 @@ export default [
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
   {
+    settings: {
+      react: { version: 'detect' }
+    },
     plugins: {
       import: importPlugin,
       'react-hooks': reactHooks
     },
     rules: {
+      'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',

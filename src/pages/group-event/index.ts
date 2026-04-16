@@ -1,0 +1,1 @@
+export { GroupEventPage } from './GroupEventPage';
