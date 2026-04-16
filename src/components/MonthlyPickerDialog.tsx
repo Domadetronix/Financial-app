@@ -20,10 +20,11 @@ interface Props {
   open: boolean;
   onClose: () => void;
   monthlyExpenses: Expense[];
+  alreadyAddedNames?: string[];
   onAdd: (expenses: MonthExpense[]) => void;
 }
 
-export const MonthlyPickerDialog: React.FC<Props> = ({ open, onClose, monthlyExpenses, onAdd }) => {
+export const MonthlyPickerDialog: React.FC<Props> = ({ open, onClose, monthlyExpenses, alreadyAddedNames = [], onAdd }) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) => {
@@ -57,17 +58,20 @@ export const MonthlyPickerDialog: React.FC<Props> = ({ open, onClose, monthlyExp
           </Typography>
         ) : (
           <List disablePadding>
-            {monthlyExpenses.map((e) => (
-              <ListItem
-                key={e.id}
-                disablePadding
-                onClick={() => toggle(e.id)}
-                sx={{ cursor: 'pointer' }}
-              >
-                <Checkbox checked={selected.has(e.id)} />
-                <ListItemText primary={e.name} secondary={`${e.amount} ₽`} />
-              </ListItem>
-            ))}
+            {monthlyExpenses.map((e) => {
+              const disabled = alreadyAddedNames.includes(e.name);
+              return (
+                <ListItem
+                  key={e.id}
+                  disablePadding
+                  onClick={() => !disabled && toggle(e.id)}
+                  sx={{ cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1 }}
+                >
+                  <Checkbox checked={selected.has(e.id)} disabled={disabled} />
+                  <ListItemText primary={e.name} secondary={`${e.amount} ₽`} />
+                </ListItem>
+              );
+            })}
           </List>
         )}
       </DialogContent>

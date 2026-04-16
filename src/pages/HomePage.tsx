@@ -5,6 +5,7 @@ import {
   AccordionSummary,
   Box,
   Button,
+  CircularProgress,
   Container,
   TextField,
   Typography
@@ -20,21 +21,21 @@ import { IncomeEntryList } from '../components/IncomeEntryList';
 import { MonthlyIncomePickerDialog } from '../components/MonthlyIncomePickerDialog';
 import { MonthlyPickerDialog } from '../components/MonthlyPickerDialog';
 import { MonthSelector } from '../components/MonthSelector';
+import { useNotification } from '../contexts/NotificationContext';
 import { loadAllData, saveExpenses, saveIncomeEntries } from '../lib/db';
 import { Expense, IncomeEntry, MonthExpense } from '../types';
 
 interface Props {
   userName: string;
   userId: string;
+  currentMonth: string;
+  onMonthChange: (month: string) => void;
 }
 
-export const HomePage: React.FC<Props> = ({ userName, userId }) => {
-  const today = new Date();
-
-  const [currentMonth, setCurrentMonth] = useState<string>(today.toISOString().slice(0, 7));
-  const [incomeEntriesByMonth, setIncomeEntriesByMonth] = useState<Record<string, IncomeEntry[]>>(
-    {}
-  );
+export const HomePage: React.FC<Props> = ({ userName, userId, currentMonth, onMonthChange }) => {
+  const notify = useNotification();
+  const [loading, setLoading] = useState(true);
+  const [incomeEntriesByMonth, setIncomeEntriesByMonth] = useState<Record<string, IncomeEntry[]>>({});
   const [expensesByMonth, setExpensesByMonth] = useState<Record<string, MonthExpense[]>>({});
   const [monthlyExpenses, setMonthlyExpenses] = useState<Expense[]>([]);
   const [monthlyIncomes, setMonthlyIncomes] = useState<IncomeEntry[]>([]);
@@ -52,6 +53,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
       setExpensesByMonth(data.expensesByMonth);
       setMonthlyExpenses(data.monthlyExpenses);
       setMonthlyIncomes(data.monthlyIncomes);
+      setLoading(false);
     });
   }, [userId]);
 
@@ -68,29 +70,27 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
     });
     setIncomeName('');
     setIncomeAmount('');
+    notify('Доход добавлен');
   };
 
   const handleDeleteIncome = (id: string) => {
     setIncomeEntriesByMonth((prev) => {
-      const updated = {
-        ...prev,
-        [currentMonth]: (prev[currentMonth] || []).filter((e) => e.id !== id)
-      };
+      const updated = { ...prev, [currentMonth]: (prev[currentMonth] || []).filter((e) => e.id !== id) };
       saveIncomeEntries(userId, updated);
       return updated;
     });
+    notify('Доход удалён');
   };
 
   const handleSaveIncomeEdit = (updated: IncomeEntry) => {
     setIncomeEntriesByMonth((prev) => {
-      const updatedList = (prev[currentMonth] || []).map((e) =>
-        e.id === updated.id ? updated : e
-      );
+      const updatedList = (prev[currentMonth] || []).map((e) => (e.id === updated.id ? updated : e));
       const updatedData = { ...prev, [currentMonth]: updatedList };
       saveIncomeEntries(userId, updatedData);
       return updatedData;
     });
     setEditingIncome(null);
+    notify('Доход сохранён');
   };
 
   const handleAddFromMonthlyIncomes = (entries: IncomeEntry[]) => {
@@ -99,6 +99,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
       saveIncomeEntries(userId, updated);
       return updated;
     });
+    notify('Доходы добавлены');
   };
 
   // ── Траты ───────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
       saveExpenses(userId, updated);
       return updated;
     });
+    notify('Трата добавлена');
   };
 
   const handleAddFromMonthlyExpenses = (expenses: MonthExpense[]) => {
@@ -118,17 +120,16 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
       saveExpenses(userId, updated);
       return updated;
     });
+    notify('Траты добавлены');
   };
 
   const handleDeleteExpense = (id: string) => {
     setExpensesByMonth((prev) => {
-      const updated = {
-        ...prev,
-        [currentMonth]: (prev[currentMonth] || []).filter((e) => e.id !== id)
-      };
+      const updated = { ...prev, [currentMonth]: (prev[currentMonth] || []).filter((e) => e.id !== id) };
       saveExpenses(userId, updated);
       return updated;
     });
+    notify('Трата удалена');
   };
 
   const handleSaveExpenseEdit = (updated: Expense) => {
@@ -140,6 +141,8 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
       saveExpenses(userId, updatedData);
       return updatedData;
     });
+    setEditingExpense(null);
+    notify('Трата сохранена');
   };
 
   const handleToggleClose = (id: string) => {
@@ -160,6 +163,14 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
   const totalIncome = currentIncomeEntries.reduce((sum, e) => sum + e.amount, 0);
   const totalExpenses = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = totalIncome - totalExpenses;
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container>
@@ -246,7 +257,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
         onClose={() => setMonthSelectorOpen(false)}
         selected={currentMonth}
         onSelect={(m) => {
-          setCurrentMonth(m);
+          onMonthChange(m);
           setMonthSelectorOpen(false);
         }}
       />
@@ -255,6 +266,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
         open={monthlyExpensePickerOpen}
         onClose={() => setMonthlyExpensePickerOpen(false)}
         monthlyExpenses={monthlyExpenses}
+        alreadyAddedNames={currentMonthExpenses.map(e => e.name)}
         onAdd={handleAddFromMonthlyExpenses}
       />
 
@@ -262,6 +274,7 @@ export const HomePage: React.FC<Props> = ({ userName, userId }) => {
         open={monthlyIncomePickerOpen}
         onClose={() => setMonthlyIncomePickerOpen(false)}
         monthlyIncomes={monthlyIncomes}
+        alreadyAddedNames={currentIncomeEntries.map(e => e.name)}
         onAdd={handleAddFromMonthlyIncomes}
       />
 

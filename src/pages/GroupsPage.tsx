@@ -4,6 +4,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Dialog,
   DialogActions,
@@ -20,6 +21,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
+import { useNotification } from '../contexts/NotificationContext';
 import { createGroup, joinGroupByInviteCode, subscribeToUserGroups } from '../lib/groups';
 import { Group } from '../types';
 
@@ -36,7 +38,9 @@ interface Props {
 }
 
 export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => {
+  const notify = useNotification();
   const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
@@ -46,8 +50,15 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
   const [joining, setJoining] = useState(false);
 
   useEffect(() => {
-    if (userId === 'local') return;
-    const unsub = subscribeToUserGroups(userId, setGroups);
+    if (userId === 'local') {
+      setLoading(false);
+      return;
+    }
+    let first = true;
+    const unsub = subscribeToUserGroups(userId, (data) => {
+      setGroups(data);
+      if (first) { setLoading(false); first = false; }
+    });
     return unsub;
   }, [userId]);
 
@@ -56,6 +67,14 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <GroupIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
         <Typography color="text.secondary">Группы доступны только в Telegram</Typography>
+      </Box>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CircularProgress />
       </Box>
     );
   }
@@ -73,6 +92,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
     setCreating(false);
     setCreateOpen(false);
     setNewGroupName('');
+    notify('Группа создана');
     onSelectGroup(groupId);
   };
 
@@ -90,6 +110,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
     if (result.success && result.groupId) {
       setJoinOpen(false);
       setInviteCode('');
+      notify('Вы вступили в группу');
       onSelectGroup(result.groupId);
     } else {
       setJoinError(result.error ?? 'Ошибка');

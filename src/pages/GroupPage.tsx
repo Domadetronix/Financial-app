@@ -19,9 +19,8 @@ import { ExpenseList } from '../components/ExpenseList';
 import { GroupHeader } from '../components/GroupHeader';
 import { GroupSettingsDialog } from '../components/GroupSettingsDialog';
 import { IncomeEntryList } from '../components/IncomeEntryList';
-import { MonthlyIncomePickerDialog } from '../components/MonthlyIncomePickerDialog';
-import { MonthlyPickerDialog } from '../components/MonthlyPickerDialog';
 import { MonthSelector } from '../components/MonthSelector';
+import { useNotification } from '../contexts/NotificationContext';
 import {
   deleteGroup,
   leaveGroup,
@@ -37,25 +36,18 @@ import {
   GroupData,
   GroupIncomeEntry,
   GroupMonthExpense,
-  IncomeEntry,
-  MonthExpense
+  IncomeEntry
 } from '../types';
-
-interface TelegramUser {
-  id: number;
-  first_name: string;
-  photo_url?: string;
-}
 
 interface Props {
   groupId: string;
   userId: string;
-  user: TelegramUser | null;
   onBack: () => void;
 }
 
-export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) => {
+export const GroupPage: React.FC<Props> = ({ groupId, userId, onBack }) => {
   const today = new Date();
+  const notify = useNotification();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [groupData, setGroupData] = useState<GroupData | null>(null);
@@ -63,8 +55,6 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingIncome, setEditingIncome] = useState<IncomeEntry | null>(null);
   const [monthSelectorOpen, setMonthSelectorOpen] = useState(false);
-  const [monthlyExpensePickerOpen, setMonthlyExpensePickerOpen] = useState(false);
-  const [monthlyIncomePickerOpen, setMonthlyIncomePickerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [incomeName, setIncomeName] = useState('');
   const [incomeAmount, setIncomeAmount] = useState('');
@@ -108,6 +98,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
     saveGroupData(groupId, 'incomeEntriesByMonth', updated);
     setIncomeName('');
     setIncomeAmount('');
+    notify('Доход добавлен');
   };
 
   const handleDeleteIncome = (id: string) => {
@@ -116,6 +107,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
       [currentMonth]: (groupData.incomeEntriesByMonth[currentMonth] || []).filter(e => e.id !== id)
     };
     saveGroupData(groupId, 'incomeEntriesByMonth', updated);
+    notify('Доход удалён');
   };
 
   const handleSaveIncomeEdit = (edited: IncomeEntry) => {
@@ -127,15 +119,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
     };
     saveGroupData(groupId, 'incomeEntriesByMonth', updated);
     setEditingIncome(null);
-  };
-
-  const handleAddFromMonthlyIncomes = (entries: IncomeEntry[]) => {
-    const tagged: GroupIncomeEntry[] = entries.map(e => ({ ...e, addedByTelegramId: userId }));
-    const updated = {
-      ...groupData.incomeEntriesByMonth,
-      [currentMonth]: [...(groupData.incomeEntriesByMonth[currentMonth] || []), ...tagged]
-    };
-    saveGroupData(groupId, 'incomeEntriesByMonth', updated);
+    notify('Доход сохранён');
   };
 
   // ── Траты ───────────────────────────────────────────────────────────────
@@ -147,15 +131,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
       [currentMonth]: [...(groupData.expensesByMonth[currentMonth] || []), monthExpense]
     };
     saveGroupData(groupId, 'expensesByMonth', updated);
-  };
-
-  const handleAddFromMonthlyExpenses = (expenses: MonthExpense[]) => {
-    const tagged: GroupMonthExpense[] = expenses.map(e => ({ ...e, addedByTelegramId: userId }));
-    const updated = {
-      ...groupData.expensesByMonth,
-      [currentMonth]: [...(groupData.expensesByMonth[currentMonth] || []), ...tagged]
-    };
-    saveGroupData(groupId, 'expensesByMonth', updated);
+    notify('Трата добавлена');
   };
 
   const handleDeleteExpense = (id: string) => {
@@ -164,6 +140,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
       [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).filter(e => e.id !== id)
     };
     saveGroupData(groupId, 'expensesByMonth', updated);
+    notify('Трата удалена');
   };
 
   const handleSaveExpenseEdit = (edited: Expense) => {
@@ -175,6 +152,7 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
     };
     saveGroupData(groupId, 'expensesByMonth', updated);
     setEditingExpense(null);
+    notify('Трата сохранена');
   };
 
   const handleToggleClose = (id: string) => {
@@ -191,10 +169,12 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
 
   const handleRename = (name: string) => {
     updateGroupName(groupId, name);
+    notify('Название обновлено');
   };
 
   const handleRemoveMember = (telegramId: string) => {
     removeMemberFromGroup(groupId, telegramId);
+    notify('Участник удалён');
   };
 
   const handleLeave = async () => {
@@ -257,9 +237,6 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
           <Button variant="contained" fullWidth onClick={handleAddIncome} sx={{ mb: 1 }}>
             Добавить
           </Button>
-          <Button variant="outlined" fullWidth onClick={() => setMonthlyIncomePickerOpen(true)} sx={{ mb: 1 }}>
-            + Из регулярных
-          </Button>
           <IncomeEntryList
             entries={currentIncomeEntries}
             onDelete={handleDeleteIncome}
@@ -280,14 +257,6 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
         </AccordionSummary>
         <AccordionDetails sx={{ pt: 0 }}>
           <ExpenseForm onAdd={handleAddExpense} />
-          <Button
-            variant="outlined"
-            fullWidth
-            sx={{ mt: 1, mb: 1 }}
-            onClick={() => setMonthlyExpensePickerOpen(true)}
-          >
-            + Из регулярных
-          </Button>
           <ExpenseList
             expenses={currentMonthExpenses}
             onDelete={handleDeleteExpense}
@@ -305,20 +274,6 @@ export const GroupPage: React.FC<Props> = ({ groupId, userId, user, onBack }) =>
           setCurrentMonth(m);
           setMonthSelectorOpen(false);
         }}
-      />
-
-      <MonthlyPickerDialog
-        open={monthlyExpensePickerOpen}
-        onClose={() => setMonthlyExpensePickerOpen(false)}
-        monthlyExpenses={groupData.monthlyExpenses}
-        onAdd={handleAddFromMonthlyExpenses}
-      />
-
-      <MonthlyIncomePickerDialog
-        open={monthlyIncomePickerOpen}
-        onClose={() => setMonthlyIncomePickerOpen(false)}
-        monthlyIncomes={groupData.monthlyIncomes}
-        onAdd={handleAddFromMonthlyIncomes}
       />
 
       {editingExpense && (

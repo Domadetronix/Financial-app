@@ -64,9 +64,9 @@ export const GroupSettingsDialog: React.FC<Props> = ({
   };
 
   const handleShare = () => {
-    const botLink = 'https://t.me/domadetronix_financial_bot';
-    const text = `Присоединяйся к группе «${group.name}»!\nКод: ${group.inviteCode}`;
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(botLink)}&text=${encodeURIComponent(text)}`;
+    const deepLink = `https://t.me/domadetronix_financial_bot?startapp=${group.inviteCode}`;
+    const text = `Присоединяйся к группе «${group.name}»!`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLink)}&text=${encodeURIComponent(text)}`;
     window.Telegram?.WebApp?.openTelegramLink(shareUrl);
   };
 

@@ -20,6 +20,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   monthlyIncomes: IncomeEntry[];
+  alreadyAddedNames?: string[];
   onAdd: (entries: IncomeEntry[]) => void;
 }
 
@@ -27,6 +28,7 @@ export const MonthlyIncomePickerDialog: React.FC<Props> = ({
   open,
   onClose,
   monthlyIncomes,
+  alreadyAddedNames = [],
   onAdd
 }) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -62,17 +64,20 @@ export const MonthlyIncomePickerDialog: React.FC<Props> = ({
           </Typography>
         ) : (
           <List disablePadding>
-            {monthlyIncomes.map((e) => (
-              <ListItem
-                key={e.id}
-                disablePadding
-                onClick={() => toggle(e.id)}
-                sx={{ cursor: 'pointer' }}
-              >
-                <Checkbox checked={selected.has(e.id)} />
-                <ListItemText primary={e.name} secondary={`${e.amount} ₽`} />
-              </ListItem>
-            ))}
+            {monthlyIncomes.map((e) => {
+              const disabled = alreadyAddedNames.includes(e.name);
+              return (
+                <ListItem
+                  key={e.id}
+                  disablePadding
+                  onClick={() => !disabled && toggle(e.id)}
+                  sx={{ cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1 }}
+                >
+                  <Checkbox checked={selected.has(e.id)} disabled={disabled} />
+                  <ListItemText primary={e.name} secondary={`${e.amount} ₽`} />
+                </ListItem>
+              );
+            })}
           </List>
         )}
       </DialogContent>
