@@ -21,7 +21,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         open={open}
         autoHideDuration={2500}
         onClose={() => setOpen(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ bottom: '90px' }}
       >
         <Alert severity={severity} onClose={() => setOpen(false)} variant="filled" sx={{ width: '100%' }}>
           {message}

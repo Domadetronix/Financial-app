@@ -26,7 +26,14 @@ import {
   updateGroupName
 } from '@/shared/api';
 import { useNotification } from '@/shared/hooks';
-import { Expense, Group, GroupData, GroupIncomeEntry, GroupMonthExpense, IncomeEntry } from '@/shared/types';
+import {
+  Expense,
+  Group,
+  GroupData,
+  GroupIncomeEntry,
+  GroupMonthExpense,
+  IncomeEntry
+} from '@/shared/types';
 import { ExpenseList } from '@/widgets/expense-list';
 import { GroupHeader } from '@/widgets/group-header';
 import { GroupSettingsDialog } from '@/widgets/group-settings';
@@ -54,7 +61,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
 
   useEffect(() => {
     const unsubGroup = subscribeToGroup(groupId, setGroup);
-    const unsubData = subscribeToGroupData(groupId, data => {
+    const unsubData = subscribeToGroupData(groupId, (data) => {
       setGroupData(
         data ?? {
           incomeEntriesByMonth: {},
@@ -83,7 +90,12 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const handleAddIncome = () => {
     const parsed = parseFloat(incomeAmount);
     if (!incomeName || isNaN(parsed) || parsed < 0) return;
-    const entry: GroupIncomeEntry = { id: uuid(), name: incomeName, amount: parsed, addedByTelegramId: userId };
+    const entry: GroupIncomeEntry = {
+      id: uuid(),
+      name: incomeName,
+      amount: parsed,
+      addedByTelegramId: userId
+    };
     const updated = {
       ...groupData.incomeEntriesByMonth,
       [currentMonth]: [...(groupData.incomeEntriesByMonth[currentMonth] || []), entry]
@@ -97,7 +109,9 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const handleDeleteIncome = (id: string) => {
     const updated = {
       ...groupData.incomeEntriesByMonth,
-      [currentMonth]: (groupData.incomeEntriesByMonth[currentMonth] || []).filter(e => e.id !== id)
+      [currentMonth]: (groupData.incomeEntriesByMonth[currentMonth] || []).filter(
+        (e) => e.id !== id
+      )
     };
     saveGroupData(groupId, 'incomeEntriesByMonth', updated);
     notify('Доход удалён');
@@ -106,7 +120,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const handleSaveIncomeEdit = (edited: IncomeEntry) => {
     const updated = {
       ...groupData.incomeEntriesByMonth,
-      [currentMonth]: (groupData.incomeEntriesByMonth[currentMonth] || []).map(e =>
+      [currentMonth]: (groupData.incomeEntriesByMonth[currentMonth] || []).map((e) =>
         e.id === edited.id ? { ...e, ...edited } : e
       )
     };
@@ -118,7 +132,11 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   // ── Траты ───────────────────────────────────────────────────────────────
 
   const handleAddExpense = (expense: Expense) => {
-    const monthExpense: GroupMonthExpense = { ...expense, closed: false, addedByTelegramId: userId };
+    const monthExpense: GroupMonthExpense = {
+      ...expense,
+      closed: false,
+      addedByTelegramId: userId
+    };
     const updated = {
       ...groupData.expensesByMonth,
       [currentMonth]: [...(groupData.expensesByMonth[currentMonth] || []), monthExpense]
@@ -130,7 +148,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const handleDeleteExpense = (id: string) => {
     const updated = {
       ...groupData.expensesByMonth,
-      [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).filter(e => e.id !== id)
+      [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).filter((e) => e.id !== id)
     };
     saveGroupData(groupId, 'expensesByMonth', updated);
     notify('Трата удалена');
@@ -139,7 +157,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const handleSaveExpenseEdit = (edited: Expense) => {
     const updated = {
       ...groupData.expensesByMonth,
-      [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).map(e =>
+      [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).map((e) =>
         e.id === edited.id ? { ...e, ...edited } : e
       )
     };
@@ -151,7 +169,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const handleToggleClose = (id: string) => {
     const updated = {
       ...groupData.expensesByMonth,
-      [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).map(e =>
+      [currentMonth]: (groupData.expensesByMonth[currentMonth] || []).map((e) =>
         e.id === id ? { ...e, closed: !e.closed } : e
       )
     };
@@ -189,7 +207,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const remaining = totalIncome - totalExpenses;
 
   return (
-    <Container sx={{ pt: 'max(env(safe-area-inset-top, 0px), 48px)' }}>
+    <Container sx={{ pt: '84px' }}>
       <GroupHeader
         groupName={group.name}
         remaining={remaining}
@@ -214,14 +232,14 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
             <TextField
               label="Название"
               value={incomeName}
-              onChange={e => setIncomeName(e.target.value)}
+              onChange={(e) => setIncomeName(e.target.value)}
               size="small"
               fullWidth
             />
             <TextField
               label="Сумма"
               value={incomeAmount}
-              onChange={e => setIncomeAmount(e.target.value)}
+              onChange={(e) => setIncomeAmount(e.target.value)}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
               size="small"
               sx={{ width: 120 }}
@@ -263,7 +281,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
         open={monthSelectorOpen}
         onClose={() => setMonthSelectorOpen(false)}
         selected={currentMonth}
-        onSelect={m => {
+        onSelect={(m) => {
           setCurrentMonth(m);
           setMonthSelectorOpen(false);
         }}

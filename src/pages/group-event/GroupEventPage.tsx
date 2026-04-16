@@ -111,11 +111,22 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
   };
 
   const handleCloseDebt = (toId: string) => {
+    // Нетто-перевод закрывает оба направления взаимного долга:
+    // 1. Траты, которые оплатил toId, а userId участвует — userId переводит
+    // 2. Траты, которые оплатил userId, а toId участвует — toId «переводит»
+    //    (фактически это offset: toId уже получил меньше из-за взаимозачёта)
     const updatedExpenses = eventData.expenses.map(e => {
-      if (e.paidById !== toId || !e.participantIds.includes(userId)) return e;
       const prev = e.transferredByIds ?? [];
-      if (prev.includes(userId)) return e;
-      return { ...e, transferredByIds: [...prev, userId] };
+
+      if (e.paidById === toId && e.participantIds.includes(userId) && !prev.includes(userId)) {
+        return { ...e, transferredByIds: [...prev, userId] };
+      }
+
+      if (e.paidById === userId && e.participantIds.includes(toId) && !prev.includes(toId)) {
+        return { ...e, transferredByIds: [...prev, toId] };
+      }
+
+      return e;
     });
     saveEventGroupData(groupId, { expenses: updatedExpenses });
   };
@@ -149,7 +160,7 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
   const totalExpenses = eventData.expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <Container sx={{ pt: 'max(env(safe-area-inset-top, 0px), 48px)', pb: '100px' }}>
+    <Container sx={{ pt: '80px', pb: '100px' }}>
       {/* Шапка */}
       <Paper sx={{ p: 2, mb: 2, position: 'relative', textAlign: 'center' }}>
         <IconButton size="small" onClick={onClose} sx={{ position: 'absolute', top: 8, left: 8 }}>

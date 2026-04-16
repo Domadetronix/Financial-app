@@ -1,18 +1,22 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import {
   Box,
-  Button,
   Dialog,
   DialogContent,
   DialogTitle,
   Divider,
+  IconButton,
   List,
   ListItem,
+  Tooltip,
   Typography
 } from '@mui/material';
+import { useState } from 'react';
 
 import { GroupEventExpense, GroupMember, MockMember } from '@/shared/types';
+import { ConfirmDialog } from '@/shared/ui';
 import { Transfer, computeSettlement } from '@/shared/utils';
 
 interface AllMember {
@@ -41,6 +45,8 @@ export function SettlementDialog({
   currentUserId,
   onCloseDebt
 }: Props) {
+  const [pendingDebt, setPendingDebt] = useState<Transfer | null>(null);
+
   const allMembers: AllMember[] = [
     ...realMembers.map(m => ({
       id: m.telegramId,
@@ -63,84 +69,97 @@ export function SettlementDialog({
 
   const renderTransfer = (t: Transfer, showCloseBtn: boolean) => (
     <ListItem key={`${t.fromId}_${t.toId}`} disablePadding sx={{ py: 0.75 }}>
-      <Box sx={{ width: '100%' }}>
-        <Box display="flex" alignItems="center" gap={0.5}>
-          <Typography variant="body2" fontWeight={showCloseBtn || t.toId === currentUserId ? 600 : 400}>
-            {getName(t.fromId)}
-          </Typography>
-          <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.secondary', flexShrink: 0 }} />
-          <Typography variant="body2">{getName(t.toId)}</Typography>
-          <Typography variant="body2" fontWeight={600} sx={{ ml: 'auto' }}>
-            {t.amount} ₽
-          </Typography>
-        </Box>
+      <Box display="flex" alignItems="center" gap={0.5} sx={{ width: '100%' }}>
+        <Typography variant="body2" fontWeight={showCloseBtn || t.toId === currentUserId ? 600 : 400}>
+          {getName(t.fromId)}
+        </Typography>
+        <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.secondary', flexShrink: 0 }} />
+        <Typography variant="body2">{getName(t.toId)}</Typography>
+        <Typography variant="body2" fontWeight={600} sx={{ ml: 'auto', mr: showCloseBtn ? 0.5 : 0 }}>
+          {t.amount} ₽
+        </Typography>
         {showCloseBtn && onCloseDebt && (
-          <Button
-            size="small"
-            color="success"
-            onClick={() => onCloseDebt(t.toId)}
-            sx={{ mt: 0.25, p: 0, minWidth: 0, textTransform: 'none' }}
-          >
-            Я перевёл — закрыть долг
-          </Button>
+          <Tooltip title="Я перевёл">
+            <IconButton size="small" color="success" onClick={() => setPendingDebt(t)} sx={{ p: 0.25 }}>
+              <CheckCircleOutlineIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         )}
       </Box>
     </ListItem>
   );
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Итог</DialogTitle>
-      <DialogContent sx={{ pt: 0 }}>
-        <Typography variant="caption" color="text.secondary">
-          Всего потрачено: {totalExpenses} ₽
-        </Typography>
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+        <DialogTitle>Итог</DialogTitle>
+        <DialogContent sx={{ pt: 0 }}>
+          <Typography variant="caption" color="text.secondary">
+            Всего потрачено: {totalExpenses} ₽
+          </Typography>
 
-        {transfers.length === 0 ? (
-          <Box sx={{ py: 3, textAlign: 'center' }}>
-            <CheckCircleIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
-            <Typography color="text.secondary">Все расчёты завершены</Typography>
-          </Box>
-        ) : (
-          <>
-            {myDebts.length > 0 && (
-              <>
-                <Typography variant="subtitle2" sx={{ mt: 2, mb: 0.5 }} color="error.main">
-                  Вы должны перевести
-                </Typography>
-                <List disablePadding>
-                  {myDebts.map(t => renderTransfer(t, true))}
-                </List>
-              </>
-            )}
+          {transfers.length === 0 ? (
+            <Box sx={{ py: 3, textAlign: 'center' }}>
+              <CheckCircleIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
+              <Typography color="text.secondary">Все расчёты завершены</Typography>
+            </Box>
+          ) : (
+            <>
+              {myDebts.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ mt: 2, mb: 0.5 }} color="error.main">
+                    Вы должны перевести
+                  </Typography>
+                  <List disablePadding>
+                    {myDebts.map(t => renderTransfer(t, true))}
+                  </List>
+                </>
+              )}
 
-            {myCredits.length > 0 && (
-              <>
-                <Typography variant="subtitle2" sx={{ mt: 2, mb: 0.5 }} color="success.main">
-                  Вам должны перевести
-                </Typography>
-                <List disablePadding>
-                  {myCredits.map(t => renderTransfer(t, false))}
-                </List>
-              </>
-            )}
+              {myCredits.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ mt: 2, mb: 0.5 }} color="success.main">
+                    Вам должны перевести
+                  </Typography>
+                  <List disablePadding>
+                    {myCredits.map(t => renderTransfer(t, false))}
+                  </List>
+                </>
+              )}
 
-            {others.length > 0 && (
-              <>
-                {(myDebts.length > 0 || myCredits.length > 0) && (
-                  <Divider sx={{ mt: 2 }} />
-                )}
-                <Typography variant="subtitle2" sx={{ mt: 2, mb: 0.5 }} color="text.secondary">
-                  Остальные переводы
-                </Typography>
-                <List disablePadding>
-                  {others.map(t => renderTransfer(t, false))}
-                </List>
-              </>
-            )}
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+              {others.length > 0 && (
+                <>
+                  {(myDebts.length > 0 || myCredits.length > 0) && (
+                    <Divider sx={{ mt: 2 }} />
+                  )}
+                  <Typography variant="subtitle2" sx={{ mt: 2, mb: 0.5 }} color="text.secondary">
+                    Остальные переводы
+                  </Typography>
+                  <List disablePadding>
+                    {others.map(t => renderTransfer(t, false))}
+                  </List>
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(pendingDebt)}
+        title="Подтверждаете перевод?"
+        description={
+          pendingDebt
+            ? `Вы подтверждаете, что перевели ${getName(pendingDebt.toId)} сумму ${pendingDebt.amount} ₽?`
+            : ''
+        }
+        confirmLabel="Подтверждаю"
+        onConfirm={() => {
+          if (pendingDebt && onCloseDebt) onCloseDebt(pendingDebt.toId);
+          setPendingDebt(null);
+        }}
+        onCancel={() => setPendingDebt(null)}
+      />
+    </>
   );
 }
