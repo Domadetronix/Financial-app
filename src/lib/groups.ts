@@ -13,7 +13,16 @@ import {
 } from 'firebase/firestore';
 
 import { firestoreDb } from './firebase';
-import { Expense, Group, GroupData, GroupMember, IncomeEntry } from '../types';
+import {
+  EventGroupData,
+  Expense,
+  Group,
+  GroupData,
+  GroupMember,
+  GroupType,
+  IncomeEntry,
+  MockMember
+} from '../types';
 
 const db = () => {
   if (!firestoreDb) throw new Error('Firestore not initialized');
@@ -22,6 +31,7 @@ const db = () => {
 
 const groupRef = (groupId: string) => doc(db(), 'groups', groupId);
 const groupDataRef = (groupId: string) => doc(db(), 'groups', groupId, 'appData', 'main');
+const eventDataRef = (groupId: string) => doc(db(), 'groups', groupId, 'appData', 'event');
 
 // Алфавит без похожих символов: 0/O, 1/I/l, 8/B
 const ALPHABET = 'ACDEFGHJKLMNPQRSTUVWXYZ234679';
@@ -35,6 +45,7 @@ export const createGroup = async (
   ownerTelegramId: string,
   ownerName: string,
   groupName: string,
+  type: GroupType,
   photoUrl?: string
 ): Promise<string> => {
   const member: GroupMember = { telegramId: ownerTelegramId, name: ownerName, photoUrl };
@@ -42,6 +53,7 @@ export const createGroup = async (
 
   const groupDoc = await addDoc(collection(db(), 'groups'), {
     name: groupName,
+    type,
     ownerTelegramId,
     inviteCode: generateInviteCode(),
     memberIds: [ownerTelegramId],
@@ -49,13 +61,21 @@ export const createGroup = async (
     createdAt: new Date().toISOString()
   });
 
-  const emptyData: GroupData = {
-    incomeEntriesByMonth: {},
-    expensesByMonth: {},
-    monthlyIncomes: [],
-    monthlyExpenses: []
-  };
-  await setDoc(groupDataRef(groupDoc.id), emptyData);
+  if (type === 'budget') {
+    const emptyData: GroupData = {
+      incomeEntriesByMonth: {},
+      expensesByMonth: {},
+      monthlyIncomes: [],
+      monthlyExpenses: []
+    };
+    await setDoc(groupDataRef(groupDoc.id), emptyData);
+  } else {
+    const emptyEventData: EventGroupData = {
+      expenses: [],
+      settlementPaid: {}
+    };
+    await setDoc(eventDataRef(groupDoc.id), emptyEventData);
+  }
 
   return groupDoc.id;
 };
@@ -68,7 +88,14 @@ export const subscribeToUserGroups = (
 ): (() => void) => {
   const q = query(collection(db(), 'groups'), where('memberIds', 'array-contains', userId));
   return onSnapshot(q, snap => {
-    const groups: Group[] = snap.docs.map(d => ({ id: d.id, ...d.data() } as Group));
+    const groups: Group[] = snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        type: 'budget', // backward-compat: старые группы без type считаются budget
+        ...data
+      } as Group;
+    });
     cb(groups);
   });
 };
@@ -101,7 +128,29 @@ export const subscribeToGroup = (
       cb(null);
       return;
     }
-    cb({ id: snap.id, ...snap.data() } as Group);
+    const data = snap.data();
+    cb({
+      id: snap.id,
+      type: 'budget', // backward-compat
+      ...data
+    } as Group);
+  });
+};
+
+export const subscribeToEventGroupData = (
+  groupId: string,
+  cb: (data: EventGroupData) => void
+): (() => void) => {
+  return onSnapshot(eventDataRef(groupId), snap => {
+    if (!snap.exists()) {
+      cb({ expenses: [], settlementPaid: {} });
+      return;
+    }
+    const raw = snap.data() as Partial<EventGroupData>;
+    cb({
+      expenses: raw.expenses ?? [],
+      settlementPaid: raw.settlementPaid ?? {}
+    });
   });
 };
 
@@ -113,6 +162,27 @@ export const saveGroupData = (
   value: GroupData[keyof GroupData] | Record<string, Expense[]> | Record<string, IncomeEntry[]>
 ): void => {
   setDoc(groupDataRef(groupId), { [field]: value }, { merge: true });
+};
+
+export const saveEventGroupData = (
+  groupId: string,
+  field: keyof EventGroupData,
+  value: EventGroupData[keyof EventGroupData]
+): void => {
+  setDoc(eventDataRef(groupId), { [field]: value }, { merge: true });
+};
+
+// ── Управление участниками группы ─────────────────────────────────────────────
+
+export const updateMockMembers = (groupId: string, mockMembers: MockMember[]): void => {
+  updateDoc(groupRef(groupId), { mockMembers });
+};
+
+export const updateMemberDisplayNames = (
+  groupId: string,
+  displayNames: Record<string, string>
+): void => {
+  updateDoc(groupRef(groupId), { memberDisplayNames: displayNames });
 };
 
 // ── Вступление по invite-коду ─────────────────────────────────────────────────
@@ -171,6 +241,10 @@ export const removeMemberFromGroup = async (
 export const leaveGroup = removeMemberFromGroup;
 
 export const deleteGroup = async (groupId: string): Promise<void> => {
-  await deleteDoc(groupDataRef(groupId));
+  // Удаляем оба документа данных (budget и event)
+  await Promise.allSettled([
+    deleteDoc(groupDataRef(groupId)),
+    deleteDoc(eventDataRef(groupId))
+  ]);
   await deleteDoc(groupRef(groupId));
 };

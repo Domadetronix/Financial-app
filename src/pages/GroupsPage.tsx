@@ -17,13 +17,15 @@ import {
   ListItemText,
   Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 import { useNotification } from '../contexts/NotificationContext';
 import { createGroup, joinGroupByInviteCode, subscribeToUserGroups } from '../lib/groups';
-import { Group } from '../types';
+import { Group, GroupType } from '../types';
 
 interface TelegramUser {
   id: number;
@@ -44,6 +46,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupType, setNewGroupType] = useState<GroupType>('budget');
   const [inviteCode, setInviteCode] = useState('');
   const [joinError, setJoinError] = useState('');
   const [creating, setCreating] = useState(false);
@@ -87,11 +90,13 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
       userId,
       user?.first_name ?? 'Участник',
       name,
+      newGroupType,
       user?.photo_url
     );
     setCreating(false);
     setCreateOpen(false);
     setNewGroupName('');
+    setNewGroupType('budget');
     notify('Группа создана');
     onSelectGroup(groupId);
   };
@@ -117,6 +122,11 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
     }
   };
 
+  const groupTypeLabel = (g: Group) => {
+    if ((g.type ?? 'budget') === 'event') return 'Событие';
+    return `${g.members.length} уч.`;
+  };
+
   return (
     <Container>
       <Typography textAlign="center" variant="h6" mb={2}>
@@ -133,7 +143,7 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             <React.Fragment key={group.id}>
               {idx > 0 && <Divider />}
               <ListItemButton onClick={() => onSelectGroup(group.id)}>
-                <ListItemText primary={group.name} secondary={`${group.members.length} уч.`} />
+                <ListItemText primary={group.name} secondary={groupTypeLabel(group)} />
                 <ListItemSecondaryAction>
                   <ChevronRightIcon color="action" />
                 </ListItemSecondaryAction>
@@ -169,8 +179,23 @@ export const GroupsPage: React.FC<Props> = ({ userId, user, onSelectGroup }) => 
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             fullWidth
             size="small"
-            sx={{ mt: 1 }}
+            sx={{ mt: 1, mb: 2 }}
           />
+          <ToggleButtonGroup
+            value={newGroupType}
+            exclusive
+            onChange={(_, val) => { if (val) setNewGroupType(val); }}
+            fullWidth
+            size="small"
+          >
+            <ToggleButton value="budget">Совместный бюджет</ToggleButton>
+            <ToggleButton value="event">Событие</ToggleButton>
+          </ToggleButtonGroup>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            {newGroupType === 'budget'
+              ? 'Доходы и траты по месяцам — для семьи или регулярных расходов'
+              : 'Траты и расчёт долгов — для поездок и мероприятий'}
+          </Typography>
         </DialogContent>
         <DialogActions
           sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 3, pb: 2 }}

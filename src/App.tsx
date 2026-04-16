@@ -5,22 +5,35 @@ import { TabsNavigation } from './components/TabsNavigation';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { useTelegram } from './hooks/use-telegram';
 import { LOCAL_USER_ID } from './lib/db';
-import { joinGroupByInviteCode } from './lib/groups';
+import { joinGroupByInviteCode, subscribeToGroup } from './lib/groups';
+import { EventGroupPage } from './pages/EventGroupPage';
 import { GroupPage } from './pages/GroupPage';
 import { GroupsPage } from './pages/GroupsPage';
 import { HomePage } from './pages/HomePage';
 import { MonthlyExpensesPage } from './pages/MonthlyExpensesPage';
+import { Group } from './types';
 import { APP_VERSION } from './version';
 
 const App: React.FC = () => {
   const [tab, setTab] = useState('home');
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
   const [joining, setJoining] = useState(false);
   const { tg, user } = useTelegram();
 
   const userName = user?.first_name ?? 'Гость';
   const userId = user?.id ? String(user.id) : LOCAL_USER_ID;
+
+  // Подписываемся на выбранную группу, чтобы знать её тип
+  useEffect(() => {
+    if (!selectedGroupId) {
+      setSelectedGroup(null);
+      return;
+    }
+    const unsub = subscribeToGroup(selectedGroupId, setSelectedGroup);
+    return unsub;
+  }, [selectedGroupId]);
 
   useEffect(() => {
     const startParam = tg?.initDataUnsafe?.start_param;
@@ -45,6 +58,10 @@ const App: React.FC = () => {
     if (val !== 'groups') setSelectedGroupId(null);
   };
 
+  const handleBack = () => setSelectedGroupId(null);
+
+  const groupType = selectedGroup?.type ?? 'budget';
+
   return (
     <NotificationProvider>
       {joining ? (
@@ -58,11 +75,19 @@ const App: React.FC = () => {
           {tab === 'groups' && !selectedGroupId && (
             <GroupsPage userId={userId} user={user} onSelectGroup={setSelectedGroupId} />
           )}
-          {tab === 'groups' && selectedGroupId && (
+          {tab === 'groups' && selectedGroupId && groupType === 'budget' && (
             <GroupPage
               groupId={selectedGroupId}
               userId={userId}
-              onBack={() => setSelectedGroupId(null)}
+              onBack={handleBack}
+            />
+          )}
+          {tab === 'groups' && selectedGroupId && groupType === 'event' && (
+            <EventGroupPage
+              groupId={selectedGroupId}
+              userId={userId}
+              user={user}
+              onBack={handleBack}
             />
           )}
           <TabsNavigation value={tab} onChange={handleTabChange} />

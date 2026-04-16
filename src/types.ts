@@ -23,19 +23,31 @@ export interface AppData {
     monthlyIncomes: IncomeEntry[];
 }
 
+export type GroupType = 'budget' | 'event';
+
 export interface GroupMember {
     telegramId: string;
     name: string;
     photoUrl?: string;
 }
 
+// Участник без Telegram-аккаунта, добавляется создателем группы
+export interface MockMember {
+    id: string;
+    name: string;
+}
+
 export interface Group {
     id: string;
     name: string;
+    type: GroupType;
     ownerTelegramId: string;
     inviteCode: string;
     memberIds: string[];
     members: GroupMember[];
+    mockMembers?: MockMember[];
+    // Кастомное имя участника в рамках группы (telegramId|mockId → имя)
+    memberDisplayNames?: Record<string, string>;
     createdAt: string;
 }
 
@@ -52,4 +64,22 @@ export interface GroupData {
     expensesByMonth: Record<string, GroupMonthExpense[]>;
     monthlyIncomes: IncomeEntry[];
     monthlyExpenses: Expense[];
+}
+
+// ── Event-группы ──────────────────────────────────────────────────────────────
+
+export interface GroupEventExpense {
+    id: string;
+    name: string;
+    amount: number;
+    addedByTelegramId: string;
+    paidById: string;         // telegramId или MockMember.id
+    participantIds: string[]; // telegramId[] | MockMember.id[]
+    createdAt: string;
+}
+
+export interface EventGroupData {
+    expenses: GroupEventExpense[];
+    // Ключ: `${fromId}_${toId}` — отметка об оплаченных переводах
+    settlementPaid: Record<string, boolean>;
 }
