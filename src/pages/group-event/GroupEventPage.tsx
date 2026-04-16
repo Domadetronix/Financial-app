@@ -88,6 +88,12 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
     saveEventGroupData(groupId, { expenses: [...eventData.expenses, expense] });
   };
 
+  const handleUpdateExpense = (expense: GroupEventExpense) => {
+    saveEventGroupData(groupId, {
+      expenses: eventData.expenses.map(e => e.id === expense.id ? expense : e)
+    });
+  };
+
   const handleDeleteExpense = (id: string) => {
     saveEventGroupData(groupId, { expenses: eventData.expenses.filter(e => e.id !== id) });
   };
@@ -100,6 +106,16 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
         ? [...prev, userId]
         : prev.filter(id => id !== userId);
       return { ...e, transferredByIds: updatedIds };
+    });
+    saveEventGroupData(groupId, { expenses: updatedExpenses });
+  };
+
+  const handleCloseDebt = (toId: string) => {
+    const updatedExpenses = eventData.expenses.map(e => {
+      if (e.paidById !== toId || !e.participantIds.includes(userId)) return e;
+      const prev = e.transferredByIds ?? [];
+      if (prev.includes(userId)) return e;
+      return { ...e, transferredByIds: [...prev, userId] };
     });
     saveEventGroupData(groupId, { expenses: updatedExpenses });
   };
@@ -133,7 +149,7 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
   const totalExpenses = eventData.expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <Container sx={{ pb: '100px' }}>
+    <Container sx={{ pt: 'max(env(safe-area-inset-top, 0px), 48px)', pb: '100px' }}>
       {/* Шапка */}
       <Paper sx={{ p: 2, mb: 2, position: 'relative', textAlign: 'center' }}>
         <IconButton size="small" onClick={onClose} sx={{ position: 'absolute', top: 8, left: 8 }}>
@@ -204,6 +220,7 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
                 dimmed={dimmed}
                 onDelete={handleDeleteExpense}
                 onToggleTransferred={handleToggleTransferred}
+                onUpdate={handleUpdateExpense}
               />
             );
           })}
@@ -237,6 +254,8 @@ export function GroupEventPage({ groupId, userId, onClose }: Props) {
         realMembers={realMembers}
         mockMembers={mockMembers}
         memberDisplayNames={memberDisplayNames}
+        currentUserId={userId}
+        onCloseDebt={handleCloseDebt}
       />
 
       {/* Настройки */}

@@ -3,8 +3,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Box, IconButton, ListItem, ListItemText } from '@mui/material';
+import { useState } from 'react';
 
 import { Expense, isMonthExpense } from '@/shared/types';
+import { ConfirmDialog } from '@/shared/ui';
 
 interface Props {
   expense: Expense;
@@ -14,40 +16,51 @@ interface Props {
 }
 
 export function ExpenseItem({ expense, onDelete, onEdit, onClose }: Props) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const closed = isMonthExpense(expense) && expense.closed;
 
   return (
-    <ListItem
-      sx={{
-        border: '1px solid #ddd',
-        borderRadius: 2,
-        my: 1,
-        paddingRight: '96px',
-        opacity: closed ? 0.5 : 1
-      }}
-      secondaryAction={
-        <>
-          <IconButton onClick={() => onEdit(expense)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => onDelete(expense.id)}>
-            <DeleteIcon />
-          </IconButton>
-        </>
-      }
-    >
-      <Box display="flex" width="100%" alignItems="center" gap={1}>
-        {onClose && (
-          <IconButton size="small" onClick={() => onClose(expense.id)} sx={{ p: 0.5 }}>
-            {closed ? <CheckCircleIcon color="success" /> : <RadioButtonUncheckedIcon />}
-          </IconButton>
-        )}
-        <ListItemText
-          primary={expense.name}
-          secondary={`${expense.amount} ₽`}
-          primaryTypographyProps={closed ? { sx: { textDecoration: 'line-through' } } : undefined}
-        />
-      </Box>
-    </ListItem>
+    <>
+      <ListItem
+        sx={{
+          border: '1px solid #ddd',
+          borderRadius: 2,
+          my: 1,
+          paddingRight: '96px',
+          opacity: closed ? 0.5 : 1
+        }}
+        secondaryAction={
+          <>
+            <IconButton onClick={() => onEdit(expense)}>
+              <EditIcon />
+            </IconButton>
+            <IconButton color="error" onClick={() => setConfirmOpen(true)}>
+              <DeleteIcon />
+            </IconButton>
+          </>
+        }
+      >
+        <Box display="flex" width="100%" alignItems="center" gap={1}>
+          {onClose && (
+            <IconButton size="small" onClick={() => onClose(expense.id)} sx={{ p: 0.5 }}>
+              {closed ? <CheckCircleIcon color="success" /> : <RadioButtonUncheckedIcon />}
+            </IconButton>
+          )}
+          <ListItemText
+            primary={expense.name}
+            secondary={`${expense.amount} ₽`}
+            primaryTypographyProps={closed ? { sx: { textDecoration: 'line-through' } } : undefined}
+          />
+        </Box>
+      </ListItem>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Удалить трату?"
+        description={`«${expense.name}» будет удалена безвозвратно.`}
+        onConfirm={() => { setConfirmOpen(false); onDelete(expense.id); }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    </>
   );
 }

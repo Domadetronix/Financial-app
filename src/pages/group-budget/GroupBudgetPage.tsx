@@ -189,7 +189,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
   const remaining = totalIncome - totalExpenses;
 
   return (
-    <Container>
+    <Container sx={{ pt: 'max(env(safe-area-inset-top, 0px), 48px)' }}>
       <GroupHeader
         groupName={group.name}
         remaining={remaining}
@@ -200,7 +200,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
       />
 
       {/* Аккордеон: Доходы */}
-      <Accordion defaultExpanded disableGutters>
+      <Accordion disableGutters>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="subtitle1" fontWeight={600}>
             Доходы
@@ -239,7 +239,7 @@ export function GroupBudgetPage({ groupId, userId, onClose }: Props) {
       </Accordion>
 
       {/* Аккордеон: Траты */}
-      <Accordion defaultExpanded disableGutters sx={{ mt: 1 }}>
+      <Accordion disableGutters sx={{ mt: 1 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="subtitle1" fontWeight={600}>
             Траты

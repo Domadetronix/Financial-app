@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 import { Group, MockMember } from '@/shared/types';
+import { ConfirmDialog } from '@/shared/ui';
 
 interface Props {
   open: boolean;
@@ -53,6 +54,8 @@ export function GroupSettingsDialog({
   const [name, setName] = useState(group.name);
   const [copied, setCopied] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [newMockName, setNewMockName] = useState('');
   const [editingDisplayName, setEditingDisplayName] = useState<string | null>(null);
   const [displayNameValue, setDisplayNameValue] = useState('');
@@ -110,6 +113,10 @@ export function GroupSettingsDialog({
 
   const getMemberDisplayName = (telegramId: string, fallback: string) =>
     memberDisplayNames[telegramId] ?? fallback;
+
+  const memberToRemoveObj = memberToRemove
+    ? group.members.find(m => m.telegramId === memberToRemove)
+    : null;
 
   return (
     <>
@@ -180,7 +187,7 @@ export function GroupSettingsDialog({
                           <IconButton
                             size="small"
                             edge="end"
-                            onClick={() => onRemoveMember(member.telegramId)}
+                            onClick={() => setMemberToRemove(member.telegramId)}
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -303,7 +310,7 @@ export function GroupSettingsDialog({
               Удалить группу
             </Button>
           ) : (
-            <Button color="error" onClick={onLeave} fullWidth>
+            <Button color="error" onClick={() => setLeaveConfirmOpen(true)} fullWidth>
               Покинуть группу
             </Button>
           )}
@@ -313,18 +320,35 @@ export function GroupSettingsDialog({
         </DialogActions>
       </Dialog>
 
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Удалить группу?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Группа «{group.name}» и все её данные будут удалены безвозвратно.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>Отмена</Button>
-          <Button color="error" onClick={onDelete}>Удалить</Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Удалить группу?"
+        description={`Группа «${group.name}» и все её данные будут удалены безвозвратно.`}
+        confirmLabel="Удалить"
+        onConfirm={() => { setDeleteConfirmOpen(false); onDelete(); }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={leaveConfirmOpen}
+        title="Покинуть группу?"
+        description={`Вы выйдете из группы «${group.name}». Чтобы вернуться, потребуется код приглашения.`}
+        confirmLabel="Покинуть"
+        onConfirm={() => { setLeaveConfirmOpen(false); onLeave(); }}
+        onCancel={() => setLeaveConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(memberToRemove)}
+        title="Удалить участника?"
+        description={memberToRemoveObj ? `«${getMemberDisplayName(memberToRemoveObj.telegramId, memberToRemoveObj.name)}» будет удалён из группы.` : ''}
+        confirmLabel="Удалить"
+        onConfirm={() => {
+          if (memberToRemove) onRemoveMember(memberToRemove);
+          setMemberToRemove(null);
+        }}
+        onCancel={() => setMemberToRemove(null)}
+      />
     </>
   );
 }

@@ -182,7 +182,7 @@ export function HomePage({ userName, userId, currentMonth, onMonthChange, onThem
       />
 
       {/* Аккордеон: Доходы */}
-      <Accordion defaultExpanded disableGutters>
+      <Accordion disableGutters>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="subtitle1" fontWeight={600}>
             Доходы
@@ -224,7 +224,7 @@ export function HomePage({ userName, userId, currentMonth, onMonthChange, onThem
       </Accordion>
 
       {/* Аккордеон: Траты */}
-      <Accordion defaultExpanded disableGutters sx={{ mt: 1 }}>
+      <Accordion disableGutters sx={{ mt: 1 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="subtitle1" fontWeight={600}>
             Траты
